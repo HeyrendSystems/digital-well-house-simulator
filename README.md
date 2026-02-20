@@ -223,6 +223,7 @@ python digitalwellhouse/main.py
 - Add SQL logging / basic historian
 - Make key system parameters editable from the HMI (k-factor, setpoints, ramp rates, etc.)
 - Add a REST API (and optionally an MQTT interface)
+- Improve code maintainability by centralizing configuration values and reducing hard-coded parameters
 
 ---
 
