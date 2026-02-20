@@ -29,7 +29,7 @@ Python Simulation Engine (pump + system model)
 Node-RED (data ingestion + HMI logic)
         │
         ▼
-Dashboard (charts • status • alarms)
+HMI (charts • status • alarms)
 ```
 
 
