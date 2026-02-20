@@ -29,7 +29,7 @@ Python Simulation Engine (pump + system model)
 Node-RED (data ingestion + HMI logic)
         │
         ▼
-Dashboard (charts • status • alarms)
+HMI (charts • status • alarms)
 ```
 
 
@@ -57,7 +57,8 @@ Node-RED reads these values and renders a live operational HMI.
 - Flow behavior based on pressure conditions
 - Alarm state handling
 - Pump Fault Unlatch
-- Scaled Modbus register values (tenths-of-PSI representation)
+- Scaled Modbus register values (e.g., 850 represents 85.0%)
+- HMI converts scaled register values back to standard engineering units for display
 - Clear separation between simulation logic and HMI layer
 
 ---
@@ -222,6 +223,7 @@ python digitalwellhouse/main.py
 - Add SQL logging / basic historian
 - Make key system parameters editable from the HMI (k-factor, setpoints, ramp rates, etc.)
 - Add a REST API (and optionally an MQTT interface)
+- Improve code maintainability by centralizing configuration values and reducing hard-coded parameters
 
 ---
 
