@@ -1,0 +1,1178 @@
+[
+    {
+        "id": "f9a810a95d954df5",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "ef08dcc160c1049f",
+        "type": "modbus-read",
+        "z": "f9a810a95d954df5",
+        "name": "Read Holding Registers",
+        "topic": "hr",
+        "showStatusActivities": false,
+        "logIOActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "unitid": "",
+        "dataType": "HoldingRegister",
+        "adr": "0",
+        "quantity": "30",
+        "rate": "1",
+        "rateUnit": "s",
+        "delayOnStart": false,
+        "enableDeformedMessages": false,
+        "startDelayTime": "",
+        "server": "1c3e2c836f2fb6a2",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "x": 160,
+        "y": 20,
+        "wires": [
+            [],
+            [
+                "4f1b0dd459e2aff3"
+            ]
+        ]
+    },
+    {
+        "id": "4f1b0dd459e2aff3",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "HR function",
+        "func": "let tankRaw = msg.values[0]; \nlet pressureRaw = msg.values[1];\nlet gpmFlow = msg.values[2];\nlet chemicalDose = msg.values[3];\nlet vfdSpeed = msg.values[4];\nlet requiredSystemPsi = msg.values[5];\nlet pumpHeadPsi = msg.values[6];\n\nmsg.payload = {\n    level: tankRaw / 10,\n    pressurePsi: pressureRaw / 10,\n    gpmFlow: gpmFlow,\n    chemicalDose: Number((chemicalDose / 24).toFixed(3)),\n    vfdSpeed: vfdSpeed,\n    requiredSystemPsi: requiredSystemPsi,\n    pumpHeadPsi: pumpHeadPsi ,\n\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 20,
+        "wires": [
+            [
+                "36e79644a2c9b915"
+            ]
+        ]
+    },
+    {
+        "id": "6cf4ac3a465ecc1f",
+        "type": "modbus-write",
+        "z": "f9a810a95d954df5",
+        "name": "coilZero",
+        "showStatusActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "unitid": "1",
+        "dataType": "Coil",
+        "adr": "0",
+        "quantity": "1",
+        "server": "1c3e2c836f2fb6a2",
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "delayOnStart": false,
+        "startDelayTime": "",
+        "x": 1480,
+        "y": 500,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "a0e1df2306721866",
+        "type": "modbus-read",
+        "z": "f9a810a95d954df5",
+        "name": "Read Coils",
+        "topic": "coils",
+        "showStatusActivities": false,
+        "logIOActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "unitid": "",
+        "dataType": "Coil",
+        "adr": "0",
+        "quantity": "30",
+        "rate": "1",
+        "rateUnit": "s",
+        "delayOnStart": false,
+        "enableDeformedMessages": false,
+        "startDelayTime": "",
+        "server": "1c3e2c836f2fb6a2",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "x": 100,
+        "y": 80,
+        "wires": [
+            [
+                "42e9b74ae1ca8742"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "42e9b74ae1ca8742",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "Coil function",
+        "func": "let pumpCommandOn = !!msg.payload[0]\nlet pumpRunning = !!msg.payload[1];\nlet pumpFault = !!msg.payload[2];;\nlet chlrInjPump = !!msg.payload[3]\nlet lowPsiAlarm = !!msg.payload[15];\n\nmsg.payload = {\n    pumpCommandOn: pumpCommandOn,\n    pumpRunning: pumpRunning,\n    pumpFault: pumpFault,\n    lowPsiAlarm: lowPsiAlarm,\n    chlrInjPump: chlrInjPump\n}\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 310,
+        "y": 80,
+        "wires": [
+            [
+                "36e79644a2c9b915"
+            ]
+        ]
+    },
+    {
+        "id": "36e79644a2c9b915",
+        "type": "join",
+        "z": "f9a810a95d954df5",
+        "name": "Join Coil and HR",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": true,
+        "timeout": "",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 540,
+        "y": 40,
+        "wires": [
+            [
+                "91a8c7e40ce1c96b"
+            ]
+        ]
+    },
+    {
+        "id": "91a8c7e40ce1c96b",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "Hr and Coil Flatten",
+        "func": "// Guard: wait until Join has both parts\nif (!msg.payload || !msg.payload.hr || !msg.payload.coils) {\n    return null;\n}\n\nconst hr = msg.payload.hr;\nconst coils = msg.payload.coils;\n\nmsg.payload = {\n    level: hr.level,\n    pressurePsi: hr.pressurePsi,\n    gpmFlow: hr.gpmFlow,\n    chemicalDose: hr.chemicalDose,\n    vfdSpeed: hr.vfdSpeed,\n    requiredSystemPsi: hr.requiredSystemPsi,\n    pumpHeadPsi: hr.pumpHeadPsi,\n\n    pumpCommandOn: !!coils.pumpCommandOn,\n    pumpRunning: !!coils.pumpRunning,\n    pumpFault: !!coils.pumpFault,\n    chlrInjPump: !!coils.chlrInjPump,\n    lowPsiAlarm: !!coils.lowPsiAlarm\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 40,
+        "wires": [
+            [
+                "25f57b7148b1f2cf",
+                "a2f48b2b0ed43553",
+                "4871b7fe2579e8e7",
+                "8bcda363a58dca51",
+                "0932d5d3a9b54bbf",
+                "5677ba00b70a2a5e",
+                "6106ecde4edf4e00",
+                "b59a299a40a3dcad",
+                "e751ad1ae9559e11",
+                "b53e576ab0d0c5b8",
+                "17e4439132b495c8"
+            ]
+        ]
+    },
+    {
+        "id": "5b509ba4ac0fa2fb",
+        "type": "switch",
+        "z": "f9a810a95d954df5",
+        "name": "",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "faultReset",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 110,
+        "y": 240,
+        "wires": [
+            [
+                "f6850e956c7d421f"
+            ]
+        ]
+    },
+    {
+        "id": "f6850e956c7d421f",
+        "type": "trigger",
+        "z": "f9a810a95d954df5",
+        "name": "",
+        "op1": "1",
+        "op2": "",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "100",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "ms",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 2,
+        "x": 140,
+        "y": 180,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "7775c47e2bb25d75",
+        "type": "modbus-write",
+        "z": "f9a810a95d954df5",
+        "name": "faultResetCmd",
+        "showStatusActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "unitid": "1",
+        "dataType": "Coil",
+        "adr": "19",
+        "quantity": "1",
+        "server": "1c3e2c836f2fb6a2",
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "delayOnStart": false,
+        "startDelayTime": "",
+        "x": 520,
+        "y": 140,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "de8f7cf8b3280d5c",
+        "type": "switch",
+        "z": "f9a810a95d954df5",
+        "name": "On/Off Switch CMD",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "pumpCmd",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 520,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c282f584b3b40f6d",
+        "type": "ui-text",
+        "z": "f9a810a95d954df5",
+        "group": "e88373b511d17919",
+        "order": 6,
+        "width": null,
+        "height": null,
+        "name": "status",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "row-right",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1150,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "25f57b7148b1f2cf",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "function 2",
+        "func": "msg.payload = msg.payload.statusText;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 120,
+        "wires": [
+            [
+                "c282f584b3b40f6d"
+            ]
+        ]
+    },
+    {
+        "id": "a6f9458fac111516",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "intInput",
+        "func": "msg.payload = Boolean(msg.payload);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1340,
+        "y": 500,
+        "wires": [
+            [
+                "6cf4ac3a465ecc1f"
+            ]
+        ]
+    },
+    {
+        "id": "a2f48b2b0ed43553",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "extractPumpCmd",
+        "func": "msg.payload = msg.payload.pumpCommandOn;\nreturn msg;\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 500,
+        "wires": [
+            [
+                "0a52c07d1e641816"
+            ]
+        ]
+    },
+    {
+        "id": "76e5dc60fd1c542e",
+        "type": "ui-button",
+        "z": "f9a810a95d954df5",
+        "group": "e88373b511d17919",
+        "name": "faultRst",
+        "label": "Fault Reset",
+        "order": 1,
+        "width": "2",
+        "height": "1",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "faultReset",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "num",
+        "topic": "faultReset",
+        "topicType": "msg",
+        "buttonColor": "#555555",
+        "textColor": "",
+        "iconColor": "",
+        "enableClick": true,
+        "enablePointerdown": false,
+        "pointerdownPayload": "",
+        "pointerdownPayloadType": "str",
+        "enablePointerup": false,
+        "pointerupPayload": "",
+        "pointerupPayloadType": "str",
+        "x": 320,
+        "y": 140,
+        "wires": [
+            [
+                "7775c47e2bb25d75"
+            ]
+        ]
+    },
+    {
+        "id": "fb322010cf6076ae",
+        "type": "trigger",
+        "z": "f9a810a95d954df5",
+        "name": "",
+        "op1": "1",
+        "op2": "0",
+        "op1type": "num",
+        "op2type": "num",
+        "duration": "200",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "ms",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 140,
+        "y": 140,
+        "wires": [
+            [
+                "76e5dc60fd1c542e"
+            ]
+        ]
+    },
+    {
+        "id": "4871b7fe2579e8e7",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "lvlFunc",
+        "func": "msg.payload = msg.payload.level;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 80,
+        "wires": [
+            [
+                "48db46660f51a059"
+            ]
+        ]
+    },
+    {
+        "id": "8bcda363a58dca51",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "function 3",
+        "func": "msg.payload = msg.payload.pressurePsi;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 160,
+        "wires": [
+            [
+                "6a40524bebab7b36",
+                "be214d3afe88532d"
+            ]
+        ]
+    },
+    {
+        "id": "401722eaa70ae814",
+        "type": "ui-template",
+        "z": "f9a810a95d954df5",
+        "group": "b0cb45521bd77bb0",
+        "page": "",
+        "ui": "",
+        "name": "alarmBanner",
+        "order": 1,
+        "width": "4",
+        "height": "1",
+        "head": "",
+        "format": "<template>\n  <div class=\"term-banner\" :class=\"stateClass\">\n    <span class=\"icon\">{{ icon }}</span>\n    <span class=\"text\">{{ text }}</span>\n\n    <div class=\"crt-overlay\"></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  computed: {\n    pumpFault(){ return !!this.msg?.payload?.pumpFault },\n    lowPsi(){ return !!this.msg?.payload?.lowPsiAlarm },\n\n    state(){\n      if (this.pumpFault) return \"fault\"\n      if (this.lowPsi) return \"warn\"\n      return \"ok\"\n    },\n    stateClass(){ return this.state },\n\n    icon(){\n      if (this.state === \"fault\") return \"⛔\"\n      if (this.state === \"warn\") return \"⚠\"\n      return \"✔\"\n    },\n    text(){\n      if (this.state === \"fault\") return \"PUMP FAULT\"\n      if (this.state === \"warn\") return \"LOW PSI\"\n      return \"ALARMS OK\"\n    }\n  }\n}\n</script>\n\n<style scoped>\n.term-banner{\n  position: relative;\n  padding: 12px 14px;\n  border-radius: 12px;\n  font-weight: 900;\n  font-size: 15px;\n  letter-spacing: 0.08em;\n  font-family: \"Courier New\", monospace;\n  overflow: hidden;\n\n  display:flex;\n  align-items:center;\n  gap:10px;\n\n  background: radial-gradient(120% 140% at 20% 0%, #07110a 0%, #040906 55%, #020403 100%);\n  box-shadow: 0 4px 14px rgba(0,0,0,0.55);\n\n  /* FORCE TERMINAL GREEN TEXT */\n  color: #b6ffb6 !important;\n  text-shadow: 0 0 6px rgba(0,255,120,0.18);\n}\n\n/* remove white inheritance anywhere */\n.term-banner *{\n  color: inherit !important;\n}\n\n/* ===== STATES ===== */\n\n.fault{\n  border: 2px solid rgba(255,43,43,0.75);\n  box-shadow:\n    0 0 16px rgba(255,43,43,0.18),\n    inset 0 0 0 1px rgba(255,43,43,0.12);\n}\n\n.warn{\n  border: 2px solid rgba(255,179,0,0.75);\n  box-shadow:\n    0 0 16px rgba(255,179,0,0.15),\n    inset 0 0 0 1px rgba(255,179,0,0.10);\n}\n\n.ok{\n  border: 2px solid rgba(0,255,140,0.65);\n  box-shadow:\n    0 0 16px rgba(0,255,140,0.12),\n    inset 0 0 0 1px rgba(0,255,140,0.10);\n}\n\n/* ICON TINT ONLY — TEXT STAYS GREEN */\n.fault .icon{ color:#ff2b2b !important; }\n.warn  .icon{ color:#ffb400 !important; }\n.ok    .icon{ color:#00ff8c !important; }\n\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "alarm-banner",
+        "x": 1170,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0932d5d3a9b54bbf",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "lowPsiAlarm",
+        "func": "msg.payload.lowPsiAlarm\nmsg.payload.pumpFault\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 970,
+        "y": 40,
+        "wires": [
+            [
+                "401722eaa70ae814"
+            ]
+        ]
+    },
+    {
+        "id": "afa5c4f2bdbace8b",
+        "type": "ui-template",
+        "z": "f9a810a95d954df5",
+        "group": "",
+        "page": "",
+        "ui": "42f4b9cde9fb2463",
+        "name": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "/* ============================\n   CYBER THEME (CLEAN + SIMPLE)\n   ============================ */\n\n:root{\n  --bg:#020403;\n  --card:radial-gradient(120% 140% at 20% 0%, #07110a 0%, #040906 55%, #020403 100%);\n  --line:rgba(0,255,120,.18);\n}\n\n/* Page bg */\nhtml,body,.v-application,.ff-page{\n  background:var(--bg)!important;\n  color:#fff!important;\n}\n\n/* Top bar */\nheader,.v-app-bar,.v-toolbar,.v-toolbar__content,.ff-appbar,.ff-header,.ff-toolbar,\n.bg-white,.bg-background,.v-theme--light .v-app-bar,.v-theme--light .v-toolbar{\n  background:var(--card)!important;\n  color:#fff!important;\n  border-bottom:1px solid var(--line)!important;\n  box-shadow:0 4px 14px rgba(0,0,0,.55)!important;\n}\nheader *,.v-app-bar *,.v-toolbar *,.ff-appbar *,.ff-header *{\n  color:#fff!important;\n}\n.v-app-bar .v-icon,.v-toolbar .v-icon,header .v-icon{\n  color:#fff!important;\n  fill:#fff!important;\n}\n\n/* Cards / groups */\n.ff-group,.v-card,.v-sheet,.v-surface{\n  background:var(--card)!important;\n  color:#fff!important;\n  border:1px solid var(--line)!important;\n  box-shadow:0 4px 14px rgba(0,0,0,.55)!important;\n}\n\n/* Widgets */\n.ff-widget{\n  background:transparent!important;\n  color:#fff!important;\n}\n\n/* Inputs */\n.v-field,.v-input,.v-field__input,input,textarea,select{\n  color:#fff!important;\n  caret-color:#fff!important;\n}\n.v-field__overlay,.v-field__outline,.v-field__field{\n  background:rgba(0,0,0,.45)!important;\n  border-radius:12px!important;\n}\n.v-field__outline{\n  border:1px solid var(--line)!important;\n}\n.v-label,.v-field-label{\n  color:rgba(255,255,255,.75)!important;\n  letter-spacing:.10em;\n}\n\n/* Global white text/icons */\n*{color:#fff;}\n[class*=\"text-\"]{color:#fff!important;opacity:1!important;}\n.v-icon,svg{color:#fff!important;fill:#fff!important;}\n\n/* Charts */\nsvg path,svg polyline,svg line{stroke:#fff!important;}\nsvg .grid line{stroke:rgba(255,255,255,.25)!important;}\n\n/* Alarm banner */\n.alarm-banner,.alarm-banner .v-card,.alarm-banner .v-sheet,.alarm-banner .v-surface{\n  background:var(--card)!important;\n  border:none!important;\n  outline:none!important;\n  box-shadow:none!important;\n}\n.alarm-banner,.alarm-banner *,.alarm-banner .v-icon{\n  color:#fff!important;\n  fill:#fff!important;\n  text-shadow:0 0 4px rgba(0,0,0,.6)!important;\n}\n\n/* Pump icon size */\n.pump-icon .v-icon{font-size:80px!important;}\n\n/* ================================\n   CLICK FIX\n   ================================ */\n.ff-widget,.ff-widget *{pointer-events:auto!important;}\n.v-overlay,.v-overlay__scrim,.v-dialog__scrim,\n.v-menu__content,.v-tooltip__content{pointer-events:none!important;}\nbutton,input,textarea,select,a{pointer-events:auto!important;}\n.ff-page::before,.ff-page::after{pointer-events:none!important;}\n\n/* =========================================\n   FAULT RESET BUTTON\n   ========================================= */\n\n.faultReset{\n  position:relative!important;\n  display:inline-flex!important;\n  align-items:center!important;\n  justify-content:center!important;\n  padding:10px 12px!important;\n  min-height:36px!important;\n\n  border-radius:12px!important;\n  font-family:\"Courier New\", monospace!important;\n  letter-spacing:0.12em!important;\n  font-weight:900!important;\n\n  background:var(--card)!important;\n  color:#b6ffb6!important;\n\n  border:1px solid rgba(0,255,120,0.18)!important;\n  box-shadow:\n    0 3px 10px rgba(0,0,0,0.55),\n    inset 0 0 0 1px rgba(0,255,120,0.10)!important;\n\n  text-shadow:0 0 5px rgba(0,255,120,0.25)!important;\n  transition:filter .15s ease,transform .08s ease!important;\n  cursor:pointer!important;\n  user-select:none!important;\n}\n\n.faultReset:hover{\n  filter:brightness(1.08)!important;\n  box-shadow:0 3px 12px rgba(0,0,0,0.60)!important;\n}\n\n.faultReset:active{transform:scale(.97)!important;}\n\n/* Disabled */\n.faultReset:disabled{\n  opacity:.55!important;\n  background:rgba(255,255,255,.06)!important;\n  border-color:rgba(255,255,255,.12)!important;\n  box-shadow:inset 0 0 18px rgba(0,0,0,.85)!important;\n  text-shadow:none!important;\n  filter:none!important;\n}\n\n/* ================================\n   ACTIVE FAULT – TRUE PUMP OFF GREY\n   ================================ */\n.faultReset.armed,\n.faultReset.active,\n.faultReset.fault{\n  background:#555!important;\n  background-image:none!important;\n  filter:none!important;\n  text-shadow:none!important;\n  border:1px solid #444!important;\n  color:#fff!important;\n  box-shadow:inset 0 2px 6px rgba(0,0,0,.85)!important;\n}\n\n/* No brighten on hover when fault active */\n.faultReset.armed:hover,\n.faultReset.active:hover,\n.faultReset.fault:hover{\n  background:#555!important;\n  filter:none!important;\n  box-shadow:inset 0 2px 6px rgba(0,0,0,.85)!important;\n}\n\n/* CRT scanlines (normal only) */\n.faultReset::after{\n  content:\"\";\n  position:absolute;\n  inset:0;\n  pointer-events:none;\n  border-radius:12px;\n  background:repeating-linear-gradient(\n    to bottom,\n    rgba(0,0,0,0)0px,\n    rgba(0,0,0,0)2px,\n    rgba(0,0,0,0.15)3px\n  );\n  opacity:.25;\n}\n\n/* Remove overlays when fault active */\n.faultReset.armed::after,\n.faultReset.active::after,\n.faultReset.fault::after{\n  display:none!important;\n}\n",
+        "storeOutMessages": true,
+        "passthru": false,
+        "resendOnRefresh": true,
+        "templateScope": "site:style",
+        "className": "",
+        "x": 1400,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5677ba00b70a2a5e",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "function 4",
+        "func": "msg.payload = { gpmFlow: Number(msg.payload.gpmFlow ?? 0) };\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 200,
+        "wires": [
+            [
+                "17b8e2aed17c2b1b"
+            ]
+        ]
+    },
+    {
+        "id": "17b8e2aed17c2b1b",
+        "type": "ui-template",
+        "z": "f9a810a95d954df5",
+        "group": "c0022a438e1a49fe",
+        "page": "",
+        "ui": "",
+        "name": "flow GPM",
+        "order": 4,
+        "width": 2,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div class=\"term-card\">\n    <div class=\"term-header\">\n      <div class=\"term-title\">FLOW</div>\n      <div class=\"term-meta\">0–{{ maxGpm }} GPM</div>\n    </div>\n\n    <div class=\"term-readout\">\n      <span class=\"term-value\">{{ gpmText }}</span>\n      <span class=\"term-unit\">GPM</span>\n    </div>\n\n    <div class=\"term-bar\">\n      <div class=\"term-bar-fill\" :style=\"{ width: pct + '%' }\"></div>\n    </div>\n\n    <div class=\"crt-overlay\"></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data(){\n    return { maxGpm: 1550 }\n  },\n  computed:{\n    raw(){\n      const p = this.msg?.payload\n      if (p && typeof p === \"object\") return Number(p.gpmFlow ?? NaN)\n      return Number(p ?? NaN)\n    },\n    gpm(){\n      return isFinite(this.raw) ? this.raw : NaN\n    },\n    gpmText(){\n      return isFinite(this.gpm) ? this.gpm.toFixed(0) : \"--\"\n    },\n    pct(){\n      if (!isFinite(this.gpm)) return 0\n      return Math.max(0, Math.min(100, (this.gpm / this.maxGpm) * 100))\n    }\n  }\n}\n</script>\n\n<style scoped>\n.term-card{\n  position: relative;\n  border-radius: 14px;\n  padding: 14px;\n  color: #b6ffb6;\n  background: radial-gradient(120% 140% at 20% 0%, #07110a 0%, #040906 55%, #020403 100%);\n  box-shadow: 0 4px 14px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,255,120,0.10);\n  font-family: \"Courier New\", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", monospace;\n  overflow: hidden;\n}\n\n.term-header{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 10px; }\n.term-title{ font-size:12px; letter-spacing:0.18em; text-shadow:0 0 10px rgba(0,255,120,0.35); }\n.term-meta{ font-size:11px; opacity:0.6; }\n\n.term-readout{ display:flex; align-items:baseline; gap:8px; margin: 6px 0 10px 0; }\n.term-value{\n  font-size:42px;\n  font-weight:900;\n  color:#d9ffd9;\n  text-shadow:0 0 14px rgba(0,255,120,0.45);\n  letter-spacing:0.04em;\n}\n.term-unit{ font-size:14px; font-weight:900; opacity:0.85; }\n\n.term-bar{\n  height: 10px;\n  background: rgba(0,255,120,0.12);\n  border-radius: 999px;\n  overflow: hidden;\n  box-shadow: inset 0 0 10px rgba(0,0,0,0.55);\n}\n.term-bar-fill{\n  height: 100%;\n  width: 0%;\n  border-radius: 999px;\n  transition: width 0.12s linear;\n  background: linear-gradient(to right, #00ff78, #d9ffd9);\n  box-shadow: 0 0 12px rgba(0,255,120,0.30);\n}\n\n.crt-overlay{\n  pointer-events:none;\n  position:absolute;\n  inset:0;\n  background: repeating-linear-gradient(\n    to bottom,\n    rgba(0,0,0,0) 0px,\n    rgba(0,0,0,0) 2px,\n    rgba(0,0,0,0.15) 3px\n  );\n  opacity:0.5;\n}\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1160,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4134040f73d34a70",
+        "type": "ui-template",
+        "z": "f9a810a95d954df5",
+        "group": "c0022a438e1a49fe",
+        "page": "",
+        "ui": "",
+        "name": "dose GPH",
+        "order": 3,
+        "width": 2,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div class=\"term-card\">\n    <div class=\"term-header\">\n      <div class=\"term-title\">CHEMICAL DOSE</div>\n      <div class=\"term-meta\">0–{{ maxDose }} GPH</div>\n    </div>\n\n    <div class=\"term-readout\">\n      <span class=\"term-value\">{{ doseText }}</span>\n      <span class=\"term-unit\">GPH</span>\n    </div>\n\n    <div class=\"term-bar\">\n      <div class=\"term-bar-fill\" :style=\"{ width: pct + '%' }\"></div>\n    </div>\n\n    <div class=\"crt-overlay\"></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data(){\n    return { maxDose: 1.25 }\n  },\n  computed:{\n    raw(){\n      const p = this.msg?.payload\n      if (p && typeof p === \"object\") return Number(p.chemicalDose ?? NaN)\n      return Number(p ?? NaN)\n    },\n    dose(){\n      return isFinite(this.raw) ? this.raw : NaN\n    },\n    doseText(){\n      return isFinite(this.dose) ? this.dose.toFixed(3) : \"--\"\n    },\n    pct(){\n      if (!isFinite(this.dose)) return 0\n      return Math.max(0, Math.min(100, (this.dose / this.maxDose) * 100))\n    }\n  }\n}\n</script>\n\n<style scoped>\n.term-card{\n  position: relative;\n  border-radius: 14px;\n  padding: 14px;\n  color: #b6ffb6;\n  background: radial-gradient(120% 140% at 20% 0%, #07110a 0%, #040906 55%, #020403 100%);\n  box-shadow: 0 4px 14px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,255,120,0.10);\n  font-family: \"Courier New\", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", monospace;\n  overflow: hidden;\n}\n\n.term-header{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 10px; }\n.term-title{ font-size:12px; letter-spacing:0.18em; text-shadow:0 0 10px rgba(0,255,120,0.35); }\n.term-meta{ font-size:11px; opacity:0.6; }\n\n.term-readout{ display:flex; align-items:baseline; gap:8px; margin: 6px 0 10px 0; }\n.term-value{\n  font-size:42px;\n  font-weight:900;\n  color:#d9ffd9;\n  text-shadow:0 0 14px rgba(0,255,120,0.45);\n  letter-spacing:0.02em;\n}\n.term-unit{ font-size:14px; font-weight:900; opacity:0.85; }\n\n.term-bar{\n  height: 10px;\n  background: rgba(0,255,120,0.12);\n  border-radius: 999px;\n  overflow: hidden;\n  box-shadow: inset 0 0 10px rgba(0,0,0,0.55);\n}\n.term-bar-fill{\n  height: 100%;\n  width: 0%;\n  border-radius: 999px;\n  transition: width 0.12s linear;\n  background: linear-gradient(to right, #00ff78, #d9ffd9);\n  box-shadow: 0 0 12px rgba(0,255,120,0.30);\n}\n\n.crt-overlay{\n  pointer-events:none;\n  position:absolute;\n  inset:0;\n  background: repeating-linear-gradient(\n    to bottom,\n    rgba(0,0,0,0) 0px,\n    rgba(0,0,0,0) 2px,\n    rgba(0,0,0,0.15) 3px\n  );\n  opacity:0.5;\n}\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1170,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6106ecde4edf4e00",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "function 5",
+        "func": "msg.payload = { chemicalDose: Number(msg.payload.chemicalDose ?? 0) };\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 240,
+        "wires": [
+            [
+                "4134040f73d34a70"
+            ]
+        ]
+    },
+    {
+        "id": "5a34f53140c45300",
+        "type": "ui-text",
+        "z": "f9a810a95d954df5",
+        "group": "e88373b511d17919",
+        "order": 7,
+        "width": 0,
+        "height": 0,
+        "name": "Chlr pump ON",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 1180,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "17e4439132b495c8",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "function 1",
+        "func": "msg.payload = msg.payload.chlrInjPumpText;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 280,
+        "wires": [
+            [
+                "5a34f53140c45300"
+            ]
+        ]
+    },
+    {
+        "id": "b59a299a40a3dcad",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "function 6",
+        "func": "msg.payload = msg.payload.vfdSpeed;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 320,
+        "wires": [
+            [
+                "5f360e1903c7300a"
+            ]
+        ]
+    },
+    {
+        "id": "cbb885177b1c4169",
+        "type": "modbus-write",
+        "z": "f9a810a95d954df5",
+        "name": "VFD setpoint write",
+        "showStatusActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "unitid": "1",
+        "dataType": "HoldingRegister",
+        "adr": "8",
+        "quantity": "1",
+        "server": "1c3e2c836f2fb6a2",
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "delayOnStart": false,
+        "startDelayTime": "",
+        "x": 1510,
+        "y": 560,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "7826ca611942daa8",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "function 7",
+        "func": "msg.payload = msg.payload * 10;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1340,
+        "y": 560,
+        "wires": [
+            [
+                "cbb885177b1c4169"
+            ]
+        ]
+    },
+    {
+        "id": "b7d1024fbb53ab27",
+        "type": "inject",
+        "z": "f9a810a95d954df5",
+        "name": "Initial VFD setpoint",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0.5",
+        "topic": "",
+        "payload": "60",
+        "payloadType": "num",
+        "x": 950,
+        "y": 560,
+        "wires": [
+            [
+                "71ba727059e77e0d"
+            ]
+        ]
+    },
+    {
+        "id": "e751ad1ae9559e11",
+        "type": "function",
+        "z": "f9a810a95d954df5",
+        "name": "function 8",
+        "func": "const req10  = Number(msg.payload.requiredSystemPsi ?? 0); // x10\nconst pump   = Number(msg.payload.pumpHeadPsi ?? 0);       // real 0–100\n\nmsg.payload = {\n  requiredSystemPsi: req10,\n  pumpHeadPsi: pump\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 360,
+        "wires": [
+            [
+                "e44d1de79c7f25f6"
+            ]
+        ]
+    },
+    {
+        "id": "b53e576ab0d0c5b8",
+        "type": "ui-template",
+        "z": "f9a810a95d954df5",
+        "group": "e88373b511d17919",
+        "page": "",
+        "ui": "",
+        "name": "terminal",
+        "order": 5,
+        "width": 3,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div class=\"term-card\">\n    <div class=\"term-header\">\n      <div class=\"term-title\">SYSTEM STATUS</div>\n      <div class=\"term-meta\">{{ meta }}</div>\n    </div>\n\n    <div class=\"term-pre\">\n      <div v-for=\"line in lines\" :key=\"line.label\" class=\"row\">\n        <span class=\"lbl\">{{ line.label }}</span>\n        <span\n          class=\"val\"\n          :class=\"{\n            on: line.bool === true,\n            off: line.bool === false\n          }\"\n        >\n          {{ line.text }}\n        </span>\n      </div>\n    </div>\n\n    <div class=\"crt-overlay\"></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  computed: {\n    meta() {\n      const p = this.msg?.payload\n      if (!p || typeof p !== \"object\") return \"WAITING...\"\n      return `${Object.keys(p).length} TAGS`\n    },\n\n    lines() {\n      const p = this.msg?.payload\n      if (!p || typeof p !== \"object\") return []\n\n      const labels = {\n        // HR/analog\n        level: \"WATER LEVEL\",\n        pressurePsi: \"SYSTEM PRESSURE\",\n        gpmFlow: \"FLOW RATE\",\n        chemicalDose: \"CHEM DOSE\",\n        vfdSpeed: \"VFD SPEED\",\n        requiredSystemPsi: \"REQ PRESSURE\",\n        pumpHeadPsi: \"PUMP HEAD\",\n\n        // ON/OFF\n        pumpCommandOn: \"PUMP CMD\",\n        pumpRunning: \"PUMP RUN\",\n        pumpFault: \"PUMP FAULT\",\n        chlrInjPump: \"CHEM PUMP\",\n        lowPsiAlarm: \"LOW PSI ALARM\"\n      }\n\n      const boolLines = []\n      const numLines = []\n\n      for (const key of Object.keys(p)) {\n        const label = labels[key] ?? key.toUpperCase()\n        let val = p[key]\n        let bool = null\n\n        // booleans first bucket\n        if (typeof val === \"boolean\") {\n          bool = val\n          val = val ? \"ON\" : \"OFF\"\n          boolLines.push({ label, text: val, bool })\n          continue\n        }\n\n        // ✅ psi scaling (x10 -> real) ALWAYS for numeric psi tags\n        if (typeof val === \"number\" && key.toLowerCase().includes(\"psi\")) {\n          val = (val / 10).toFixed(1)\n        }\n\n        numLines.push({ label, text: val, bool })\n      }\n\n      // ON/OFF rows first, then the rest\n      return [...boolLines, ...numLines]\n    }\n  }\n}\n</script>\n\n<style scoped>\n/* (unchanged) */\n.term-card{\n  position: relative;\n  border-radius: 14px;\n  padding: 12px;\n  color: #b6ffb6;\n  background: radial-gradient(120% 140% at 20% 0%, #07110a 0%, #040906 55%, #020403 100%);\n  box-shadow: 0 4px 14px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,255,120,0.10);\n  font-family: \"Courier New\", monospace;\n  overflow: hidden;\n}\n\n.term-header{\n  display:flex;\n  justify-content:space-between;\n  margin-bottom:6px;\n}\n\n.term-title{\n  font-size:12px;\n  letter-spacing:0.18em;\n  text-shadow:0 0 8px rgba(0,255,120,0.35);\n}\n\n.term-meta{\n  font-size:10px;\n  opacity:0.6;\n}\n\n.term-pre{\n  padding:6px 8px;\n  background:rgba(0,0,0,0.55);\n  border:1px solid rgba(0,255,120,0.15);\n  border-radius:10px;\n  font-size:12px;\n  line-height:1.35;\n}\n\n.row{\n  display:flex;\n  justify-content:space-between;\n  margin:2px 0;\n}\n\n.lbl{ opacity:0.75; }\n\n.val{\n  font-weight:900;\n  color:#d9ffd9;\n}\n\n.val.on{\n  color:#00ff8c;\n  text-shadow:0 0 8px rgba(0,255,120,0.4);\n}\n\n.val.off{\n  color:#ff2b2b;\n  text-shadow:0 0 8px rgba(255,0,0,0.35);\n}\n\n.crt-overlay{\n  pointer-events:none;\n  position:absolute;\n  inset:0;\n  background: repeating-linear-gradient(\n    to bottom,\n    rgba(0,0,0,0) 0px,\n    rgba(0,0,0,0) 2px,\n    rgba(0,0,0,0.15) 3px\n  );\n  opacity:0.45;\n}\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1160,
+        "y": 20,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6a40524bebab7b36",
+        "type": "ui-template",
+        "z": "f9a810a95d954df5",
+        "group": "c0022a438e1a49fe",
+        "page": "",
+        "ui": "",
+        "name": "PSI",
+        "order": 2,
+        "width": 2,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div class=\"term-card\">\n    <div class=\"term-header\">\n      <div class=\"term-title\">SYSTEM PRESSURE</div>\n      <div class=\"term-meta\">0–{{ maxPsi }} PSI</div>\n    </div>\n\n    <div class=\"ring-wrap\">\n      <svg class=\"ring\" width=\"160\" height=\"160\" viewBox=\"0 0 160 160\">\n        <!-- background ring -->\n        <circle cx=\"80\" cy=\"80\" :r=\"radius\" class=\"ring-bg\"/>\n\n        <!-- progress ring -->\n        <circle\n          cx=\"80\" cy=\"80\" :r=\"radius\"\n          class=\"ring-fg\"\n          :stroke-dasharray=\"circumference\"\n          :stroke-dashoffset=\"dashOffset\"\n        />\n      </svg>\n\n      <div class=\"ring-center\">\n        <div class=\"big\">{{ psiText }}</div>\n        <div class=\"unit\">PSI</div>\n      </div>\n    </div>\n\n    <div class=\"crt-overlay\"></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data(){\n    return {\n      maxPsi: 100,\n      radius: 66\n    }\n  },\n  computed:{\n    raw(){\n      const p = this.msg?.payload\n      if (p && typeof p === \"object\") return Number(p.pressurePsi ?? NaN)\n      return Number(p ?? NaN)\n    },\n    psi(){\n      if (!isFinite(this.raw)) return NaN\n      return (this.raw > 200) ? this.raw / 10 : this.raw\n    },\n    psiText(){\n      return isFinite(this.psi) ? this.psi.toFixed(1) : \"--\"\n    },\n    pct(){\n      if (!isFinite(this.psi)) return 0\n      return Math.max(0, Math.min(100, (this.psi / this.maxPsi) * 100))\n    },\n    circumference(){\n      return 2 * Math.PI * this.radius\n    },\n    dashOffset(){\n      return this.circumference * (1 - this.pct / 100)\n    }\n  }\n}\n</script>\n\n<style scoped>\n.term-card{\n  position: relative;\n  border-radius: 14px;\n  padding: 14px;\n  color: #b6ffb6;\n  background: radial-gradient(120% 140% at 20% 0%, #07110a 0%, #040906 55%, #020403 100%);\n  box-shadow: 0 4px 14px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,255,120,0.10);\n  font-family: \"Courier New\", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", monospace;\n  overflow: hidden;\n}\n\n.term-header{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 10px; }\n.term-title{ font-size:12px; letter-spacing:0.18em; text-shadow:0 0 10px rgba(0,255,120,0.35); }\n.term-meta{ font-size:11px; opacity:0.6; }\n\n.ring-wrap{ position:relative; width:160px; height:160px; margin: 0 auto; }\n.ring{ display:block; }\n.ring-bg{\n  fill:none;\n  stroke: rgba(0,255,120,0.10);\n  stroke-width: 12;\n}\n.ring-fg{\n  fill:none;\n  stroke: #00ff8c;\n  stroke-width: 12;\n  stroke-linecap: round;\n  transform: rotate(-90deg);\n  transform-origin: 80px 80px;\n  transition: stroke-dashoffset 0.2s ease;\n  filter: drop-shadow(0 0 12px rgba(0,255,120,0.35));\n}\n\n.ring-center{\n  position:absolute; inset:0;\n  display:flex; flex-direction:column;\n  align-items:center; justify-content:center;\n}\n.big{\n  font-size:40px;\n  font-weight:900;\n  color:#d9ffd9;\n  text-shadow:0 0 14px rgba(0,255,120,0.45);\n  letter-spacing:0.04em;\n}\n.unit{ font-size:12px; opacity:0.75; margin-top:2px; }\n\n.crt-overlay{\n  pointer-events:none;\n  position:absolute;\n  inset:0;\n  background: repeating-linear-gradient(\n    to bottom,\n    rgba(0,0,0,0) 0px,\n    rgba(0,0,0,0) 2px,\n    rgba(0,0,0,0.15) 3px\n  );\n  opacity:0.5;\n}\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1150,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "48db46660f51a059",
+        "type": "ui-template",
+        "z": "f9a810a95d954df5",
+        "group": "c0022a438e1a49fe",
+        "page": "",
+        "ui": "",
+        "name": "TANKlvl",
+        "order": 1,
+        "width": 1,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div class=\"term-card\">\n    <div class=\"term-header\">\n      <div class=\"term-title\">TANK LEVEL</div>\n      <div class=\"term-meta\">{{ levelText }}%</div>\n    </div>\n\n    <div class=\"tank-wrap\">\n      <div class=\"tank\">\n        <div\n          class=\"tank-fill\"\n          :style=\"{ height: level + '%' }\"\n        ></div>\n      </div>\n    </div>\n\n    <div class=\"crt-overlay\"></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  computed: {\n    raw(){\n      const p = this.msg?.payload\n      if (p && typeof p === \"object\") return Number(p.level ?? NaN)\n      return Number(p ?? NaN)\n    },\n    level(){\n      if (!isFinite(this.raw)) return 0\n      return Math.max(0, Math.min(100, Math.round(this.raw)))\n    },\n    levelText(){\n      return isFinite(this.raw) ? this.level : \"--\"\n    }\n  }\n}\n</script>\n\n<style scoped>\n/* ===== Terminal Card Shell ===== */\n.term-card{\n  position: relative;\n  border-radius: 14px;\n  padding: 14px;\n  color: #b6ffb6;\n  background: radial-gradient(120% 140% at 20% 0%, #07110a 0%, #040906 55%, #020403 100%);\n  box-shadow:\n    0 4px 14px rgba(0,0,0,0.55),\n    inset 0 0 0 1px rgba(0,255,120,0.10);\n  font-family: \"Courier New\", ui-monospace, monospace;\n  overflow: hidden;\n}\n\n.term-header{\n  display:flex;\n  justify-content:space-between;\n  align-items:baseline;\n  margin-bottom:10px;\n}\n\n.term-title{\n  font-size:12px;\n  letter-spacing:0.18em;\n  text-shadow:0 0 10px rgba(0,255,120,0.35);\n}\n\n.term-meta{\n  font-size:14px;\n  font-weight:900;\n  color:#d9ffd9;\n  text-shadow:0 0 10px rgba(0,255,120,0.35);\n}\n\n/* ===== Tank ===== */\n.tank-wrap{\n  display:flex;\n  justify-content:center;\n  align-items:center;\n}\n\n.tank{\n  width:90px;\n  height:200px;\n  border-radius:14px;\n  background:#020403;\n  border:2px solid rgba(0,255,120,0.25);\n  position:relative;\n  overflow:hidden;\n  box-shadow:\n    inset 0 0 12px rgba(0,0,0,0.8),\n    0 0 14px rgba(0,255,120,0.15);\n}\n\n/* BLUE WATER */\n.tank-fill{\n  position:absolute;\n  bottom:0;\n  width:100%;\n  transition:height 0.25s ease;\n  background: linear-gradient(\n    to top,\n    #003c8f,\n    #0077ff 45%,\n    #00b3ff\n  );\n  box-shadow:\n    0 0 12px rgba(0,179,255,0.45),\n    inset 0 0 8px rgba(255,255,255,0.15);\n}\n\n/* ===== CRT Scanlines ===== */\n.crt-overlay{\n  pointer-events:none;\n  position:absolute;\n  inset:0;\n  background: repeating-linear-gradient(\n    to bottom,\n    rgba(0,0,0,0) 0px,\n    rgba(0,0,0,0) 2px,\n    rgba(0,0,0,0.15) 3px\n  );\n  opacity:0.45;\n}\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1160,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "be214d3afe88532d",
+        "type": "ui-template",
+        "z": "f9a810a95d954df5",
+        "group": "b0cb45521bd77bb0",
+        "page": "",
+        "ui": "",
+        "name": "PSI trends",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div class=\"term-card\">\n    <div class=\"top-row\">\n      <div class=\"term-title\">PSI TREND</div>\n\n      <div class=\"tabs\">\n        <button class=\"tab\" :class=\"{ active: mode==='live' }\" @click=\"mode='live'\">LIVE</button>\n        <button class=\"tab\" :class=\"{ active: mode==='48h' }\" @click=\"mode='48h'\">48H</button>\n        <span v-if=\"hovering\" class=\"time\">({{ displayTimeLabel }})</span>\n      </div>\n    </div>\n\n    <div\n      class=\"plot-wrap\"\n      @mousemove=\"onMove\"\n      @mouseleave=\"onLeave\"\n      @touchstart.prevent=\"onTouch\"\n      @touchmove.prevent=\"onTouch\"\n      @touchend=\"onLeave\"\n      ref=\"wrap\"\n    >\n      <svg viewBox=\"0 0 600 180\" preserveAspectRatio=\"none\" class=\"plot\">\n        <!-- grid -->\n        <g class=\"grid\">\n          <line v-for=\"x in 6\" :key=\"'x'+x\" :x1=\"x*100\" y1=\"0\" :x2=\"x*100\" y2=\"180\" />\n          <line v-for=\"y in 6\" :key=\"'y'+y\" x1=\"0\" :y1=\"y*30\" x2=\"600\" :y2=\"y*30\" />\n        </g>\n\n        <!-- min/max labels -->\n        <text x=\"8\" y=\"16\" class=\"axisText\">{{ yMax.toFixed(0) }}</text>\n        <text x=\"8\" y=\"176\" class=\"axisText\">{{ yMin.toFixed(0) }}</text>\n\n        <!-- trend -->\n        <path :d=\"pathD\" class=\"trend\" :stroke=\"lineColor\" />\n\n        <!-- last point dot -->\n        <circle\n          v-if=\"series.length>1\"\n          cx=\"600\"\n          :cy=\"yFor(series[series.length-1].v)\"\n          r=\"4\"\n          :fill=\"lineColor\"\n          class=\"dot\"\n        />\n\n        <!-- hover crosshair -->\n        <g v-if=\"hovering && series.length>1\">\n          <line :x1=\"hoverX\" y1=\"0\" :x2=\"hoverX\" y2=\"180\" class=\"cross\" />\n          <circle :cx=\"hoverX\" :cy=\"hoverY\" r=\"4\" class=\"crossOuter\"/>\n          <circle :cx=\"hoverX\" :cy=\"hoverY\" r=\"2.2\" :fill=\"lineColor\"/>\n        </g>\n      </svg>\n\n      <!-- tooltip -->\n      <div v-if=\"hovering && series.length>1\" class=\"tip\" :style=\"tooltipStyle\">\n        <div class=\"tipTime\">{{ displayTimeLabel }}</div>\n        <div class=\"tipVal\">\n          <span :style=\"{color: lineColor}\">{{ displayPsi.toFixed(1) }}</span>\n          <span class=\"tipUnit\">PSI</span>\n        </div>\n      </div>\n\n      <!-- footer info -->\n      <div class=\"foot\">\n        <span>{{ mode==='live' ? 'HIGH-RES (RECENT)' : 'DOWNSAMPLED (1 PT/MIN)' }}</span>\n        <span>{{ series.length }} PTS</span>\n      </div>\n    </div>\n\n    <div class=\"crt-overlay\"></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data() {\n    return {\n      mode: \"live\",\n      livePoints: 180,\n      hours48Points: 48 * 60,\n      live: [],\n      h48: [],\n      hovering: false,\n      hoverIdx: 0,\n      hoverX: 600\n    }\n  },\n\n  computed: {\n    series() {\n      return this.mode === \"48h\" ? this.h48 : this.live\n    },\n\n    raw() {\n      const p = this.msg?.payload\n      if (p && typeof p === \"object\") return Number(p.pressurePsi ?? 0)\n      return Number(p ?? 0)\n    },\n    psiNow() {\n      const n = Number.isFinite(this.raw) ? this.raw : 0\n      return (n > 200) ? (n / 10) : n\n    },\n\n    yMin() {\n      const s = this.series\n      if (s.length < 2) return 0\n      const min = Math.min(...s.map(x => x.v))\n      return Math.floor(min - 2)\n    },\n    yMax() {\n      const s = this.series\n      if (s.length < 2) return 100\n      const max = Math.max(...s.map(x => x.v))\n      return Math.ceil(max + 2)\n    },\n\n    pathD() {\n      const s = this.series\n      if (s.length < 2) return \"\"\n      const n = s.length\n      const xMax = Math.max(1, n - 1)\n\n      let d = `M ${this.xFor(0, xMax)} ${this.yFor(s[0].v)}`\n      for (let i = 1; i < n; i++) d += ` L ${this.xFor(i, xMax)} ${this.yFor(s[i].v)}`\n      return d\n    },\n\n    hoverY() {\n      const s = this.series\n      if (s.length < 2) return 0\n      const pt = s[this.hoverIdx] || s[s.length - 1]\n      return this.yFor(pt.v)\n    },\n\n    displayPsi() {\n      const s = this.series\n      if (!this.hovering || s.length < 2) return this.psiNow\n      const pt = s[this.hoverIdx] || s[s.length - 1]\n      return pt.v\n    },\n\n    displayTimeLabel() {\n      const s = this.series\n      if (!this.hovering || s.length < 2) return \"now\"\n      const pt = s[this.hoverIdx]\n      if (!pt) return \"—\"\n\n      const d = new Date(pt.t)\n\n      if (this.mode === \"live\") {\n        const agoSec = Math.max(0, Math.round((Date.now() - pt.t) / 1000))\n        if (agoSec < 60) return `${agoSec}s ago`\n        const m = Math.floor(agoSec / 60)\n        const s2 = agoSec % 60\n        return `${m}m ${s2}s ago`\n      }\n\n      const hh = String(d.getHours()).padStart(2, \"0\")\n      const mm = String(d.getMinutes()).padStart(2, \"0\")\n      const mo = String(d.getMonth() + 1).padStart(2, \"0\")\n      const da = String(d.getDate()).padStart(2, \"0\")\n      return `${mo}/${da} ${hh}:${mm}`\n    },\n\n    lineColor() {\n      const v = this.psiNow\n      if (v >= 85) return \"#ff2b2b\"\n      if (v >= 75) return \"#ffb400\"\n      return \"#00ff8c\"\n    },\n\n    tooltipStyle() {\n      const leftPct = Math.max(6, Math.min(94, (this.hoverX / 600) * 100))\n      return { left: leftPct + \"%\" }\n    }\n  },\n\n  watch: {\n    msg: {\n      immediate: true,\n      handler() {\n        const v = this.psiNow\n        const t = Date.now()\n\n        this.live.push({ t, v })\n        if (this.live.length > this.livePoints) this.live.shift()\n\n        const minuteT = Math.floor(t / 60000) * 60000\n        const last = this.h48[this.h48.length - 1]\n        if (last && last.t === minuteT) last.v = v\n        else {\n          this.h48.push({ t: minuteT, v })\n          if (this.h48.length > this.hours48Points) this.h48.shift()\n        }\n\n        if (!this.hovering) {\n          const s = this.series\n          this.hoverIdx = Math.max(0, s.length - 1)\n          this.hoverX = 600\n        }\n      }\n    }\n  },\n\n  methods: {\n    xFor(i, xMax) {\n      return ((i / xMax) * 600).toFixed(2)\n    },\n\n    yFor(v) {\n      const H = 180\n      const ymin = this.yMin\n      const ymax = Math.max(ymin + 1, this.yMax)\n      const y = H - ((v - ymin) / (ymax - ymin)) * H\n      return Number.isFinite(y) ? y.toFixed(2) : \"0\"\n    },\n\n    onMove(e) {\n      const s = this.series\n      if (s.length < 2) return\n      const rect = this.$refs.wrap.getBoundingClientRect()\n      const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left))\n      this.applyHoverX(x / rect.width)\n    },\n\n    onTouch(e) {\n      const s = this.series\n      if (s.length < 2) return\n      const rect = this.$refs.wrap.getBoundingClientRect()\n      const touch = e.touches?.[0]\n      if (!touch) return\n      const x = Math.max(0, Math.min(rect.width, touch.clientX - rect.left))\n      this.applyHoverX(x / rect.width)\n    },\n\n    applyHoverX(normX) {\n      const s = this.series\n      if (s.length < 2) return\n\n      this.hovering = true\n      this.hoverX = Math.max(0, Math.min(600, normX * 600))\n\n      const idx = Math.round(normX * (s.length - 1))\n      this.hoverIdx = Math.max(0, Math.min(s.length - 1, idx))\n    },\n\n    onLeave() {\n      this.hovering = false\n      const s = this.series\n      this.hoverIdx = Math.max(0, s.length - 1)\n      this.hoverX = 600\n    }\n  }\n}\n</script>\n\n<style scoped>\n.term-card{\n  position: relative;\n  border-radius: 14px;\n  padding: 12px;\n  color: #b6ffb6;\n  background: radial-gradient(120% 140% at 20% 0%, #07110a 0%, #040906 55%, #020403 100%);\n  box-shadow: 0 4px 14px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,255,120,0.10);\n  font-family: \"Courier New\", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", monospace;\n  overflow: hidden;\n}\n\n.top-row{\n  display:flex;\n  justify-content:space-between;\n  align-items:flex-start;\n  gap:10px;\n  flex-wrap: wrap;\n}\n\n.term-title{\n  font-size:12px;\n  letter-spacing:0.18em;\n  text-shadow:0 0 8px rgba(0,255,120,0.35);\n}\n\n.tabs{\n  display:flex;\n  gap:8px;\n  align-items:center;\n  flex-wrap: wrap;\n  font-size:12px;\n  opacity:0.9;\n  letter-spacing:0.10em;\n}\n\n.tab{\n  border-radius: 999px;\n  padding: 4px 8px;        /* was 6px 10px */\n  font-size: 11px;         /* was 12px */\n  font-weight: 900;\n  letter-spacing: 0.10em;  /* was 0.16em */\n  cursor:pointer;\n\n  border: 1px solid rgba(0,255,120,0.20);\n  background: rgba(0,0,0,0.40);\n  color: rgba(217,255,217,0.75);\n\n  box-shadow: inset 0 0 12px rgba(0,0,0,0.75);\n}\n\n.tab.active{\n  color: #d9ffd9;\n  border-color: rgba(0,255,120,0.45);\n  box-shadow:\n    inset 0 0 12px rgba(0,0,0,0.75),\n    0 0 10px rgba(0,255,120,0.08);\n}\n\n\n.time{ opacity:0.65; }\n\n/* Plot */\n.plot-wrap{\n  margin-top: 10px;\n  border-radius: 12px;\n  padding: 10px;\n  position: relative;\n\n  background: rgba(0,0,0,0.55);\n  border: 1px solid rgba(0,255,120,0.18);\n  box-shadow: inset 0 0 18px rgba(0,0,0,0.85);\n}\n\n.plot{ width:100%; height:180px; display:block; }\n\n.grid line{\n  stroke: rgba(0,255,120,0.20);\n  stroke-width: 1;\n  opacity: 0.35;\n}\n\n.axisText{\n  fill: rgba(217,255,217,0.65);\n  font-size: 12px;\n  font-family: \"Courier New\", monospace;\n}\n\n.trend{\n  fill:none;\n  stroke-width:3;\n  stroke-linejoin:round;\n  stroke-linecap:round;\n  filter: drop-shadow(0 0 10px rgba(0,0,0,0.35));\n}\n\n.dot{ filter: drop-shadow(0 0 8px rgba(0,0,0,0.35)); }\n\n.cross{ stroke: rgba(217,255,217,0.55); stroke-width: 1; }\n.crossOuter{ fill: rgba(217,255,217,0.85); }\n\n/* Tooltip */\n.tip{\n  position:absolute;\n  top: 10px;\n  transform: translateX(-50%);\n  pointer-events:none;\n\n  background: rgba(0,0,0,0.75);\n  border: 1px solid rgba(0,255,120,0.20);\n  border-radius: 12px;\n  padding: 8px 10px;\n  box-shadow: 0 8px 22px rgba(0,0,0,0.45), 0 0 14px rgba(0,255,120,0.06);\n}\n.tipTime{ font-size: 11px; opacity: 0.75; }\n.tipVal{ font-size: 16px; font-weight: 900; line-height: 1.1; }\n.tipUnit{ opacity: 0.85; font-size: 12px; margin-left: 6px; }\n\n/* Footer */\n.foot{\n  margin-top: 8px;\n  display:flex;\n  justify-content:space-between;\n  font-size: 11px;\n  opacity: 0.65;\n  letter-spacing: 0.08em;\n}\n\n/* CRT Scanlines */\n.crt-overlay{\n  pointer-events:none;\n  position:absolute;\n  inset:0;\n  background: repeating-linear-gradient(\n    to bottom,\n    rgba(0,0,0,0) 0px,\n    rgba(0,0,0,0) 2px,\n    rgba(0,0,0,0.15) 3px\n  );\n  opacity:0.45;\n}\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1170,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e44d1de79c7f25f6",
+        "type": "ui-template",
+        "z": "f9a810a95d954df5",
+        "group": "b0cb45521bd77bb0",
+        "page": "",
+        "ui": "",
+        "name": "Pump and System Head Chart",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div class=\"term-card\">\n    <div class=\"top-row\">\n      <div class=\"term-title\">HEAD TREND</div>\n\n      <div class=\"legend\">\n        <span class=\"leg\">\n          <span class=\"dot sys\"></span>\n          SYSTEM: <span class=\"num sys\">{{ fmt(displaySys) }}</span> <span class=\"u\">PSI</span>\n        </span>\n\n        <span class=\"leg\">\n          <span class=\"dot pump\"></span>\n          PUMP: <span class=\"num pump\">{{ displayPump===null ? \"—\" : fmt(displayPump) }}</span> <span class=\"u\">PSI</span>\n        </span>\n\n        <span v-if=\"hovering\" class=\"time\">({{ timeLabel }})</span>\n      </div>\n    </div>\n\n    <div\n      class=\"plot-wrap\"\n      @mousemove=\"onMove\"\n      @mouseleave=\"onLeave\"\n      @touchstart.prevent=\"onTouch\"\n      @touchmove.prevent=\"onTouch\"\n      @touchend=\"onLeave\"\n      ref=\"wrap\"\n    >\n      <svg viewBox=\"0 0 600 180\" preserveAspectRatio=\"none\" class=\"plot\">\n        <g class=\"grid\">\n          <line v-for=\"x in 6\" :key=\"'x'+x\" :x1=\"x*100\" y1=\"0\" :x2=\"x*100\" y2=\"180\"/>\n          <line v-for=\"y in 6\" :key=\"'y'+y\" x1=\"0\" :y1=\"y*30\" x2=\"600\" :y2=\"y*30\"/>\n        </g>\n\n        <!-- fixed 0..100 labels -->\n        <text x=\"8\" y=\"16\" class=\"axisText\">100</text>\n        <text x=\"8\" y=\"176\" class=\"axisText\">0</text>\n\n        <!-- lines -->\n        <path :d=\"pathSys\"  class=\"trend\" stroke=\"#00ff8c\"/>\n        <path :d=\"pathPump\" class=\"trend\" stroke=\"#00a0ff\"/>\n\n        <!-- hover -->\n        <g v-if=\"hovering && points.length>1\">\n          <line :x1=\"hoverX\" y1=\"0\" :x2=\"hoverX\" y2=\"180\" class=\"cross\"/>\n\n          <circle :cx=\"hoverX\" :cy=\"yFor(displaySys)\" r=\"4\" class=\"crossOuter\"/>\n          <circle :cx=\"hoverX\" :cy=\"yFor(displaySys)\" r=\"2.2\" fill=\"#00ff8c\"/>\n\n          <circle v-if=\"displayPump!==null\" :cx=\"hoverX\" :cy=\"yFor(displayPump)\" r=\"4\" class=\"crossOuter\"/>\n          <circle v-if=\"displayPump!==null\" :cx=\"hoverX\" :cy=\"yFor(displayPump)\" r=\"2.2\" fill=\"#00a0ff\"/>\n        </g>\n      </svg>\n\n      <div v-if=\"hovering && points.length>1\" class=\"tip\" :style=\"tooltipStyle\">\n        <div class=\"tipTime\">{{ timeLabel }}</div>\n        <div class=\"tipBody\">\n          <div>\n            <span class=\"muted\">SYSTEM</span>:\n            <span class=\"num sys\">{{ fmt(displaySys) }}</span> <span class=\"u\">PSI</span>\n          </div>\n          <div>\n            <span class=\"muted\">PUMP</span>:\n            <span class=\"num pump\">{{ displayPump===null ? \"—\" : fmt(displayPump) }}</span> <span class=\"u\">PSI</span>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"foot\">\n        <span>RECENT</span>\n        <span>{{ points.length }} PTS</span>\n      </div>\n    </div>\n\n    <div class=\"crt-overlay\"></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data() {\n    return {\n      maxPoints: 240,\n      points: [],\n\n      hovering: false,\n      hoverIdx: 0,\n      hoverX: 600\n    }\n  },\n\n  computed: {\n    p() { return this.msg?.payload },\n\n    valid() {\n      return this.p && typeof this.p === \"object\" &&\n        this.p.requiredSystemPsi !== undefined &&\n        this.p.pumpHeadPsi !== undefined\n    },\n\n    // ✅ Always treat incoming values as floats, then scale /10 so 130 -> 13.0\n    sysNow() {\n      if (!this.valid) return null\n      const raw = parseFloat(this.p.requiredSystemPsi)\n      if (!isFinite(raw)) return null\n      return raw / 10.0\n    },\n\n    // ✅ Only output pump if raw value > 10 (so after /10 it's > 1.0 PSI)\n    // ✅ Also force float scaling so 130 -> 13.0, 131 -> 13.1\n    pumpNow() {\n      if (!this.valid) return null\n      const raw = parseFloat(this.p.pumpHeadPsi)\n      if (!isFinite(raw) || raw <= 10) return null\n      return raw / 10.0\n    },\n\n    displaySys() {\n      if (!this.hovering || this.points.length < 2) return this.sysNow\n      return (this.points[this.hoverIdx] || this.points[this.points.length - 1]).sys\n    },\n\n    displayPump() {\n      if (!this.hovering || this.points.length < 2) return this.pumpNow\n      return (this.points[this.hoverIdx] || this.points[this.points.length - 1]).pump\n    },\n\n    timeLabel() {\n      if (!this.hovering || this.points.length < 2) return \"now\"\n      const pt = this.points[this.hoverIdx]\n      if (!pt) return \"—\"\n      const ago = Math.max(0, Math.round((Date.now() - pt.t) / 1000))\n      if (ago < 60) return `${ago}s ago`\n      const m = Math.floor(ago / 60)\n      const s = ago % 60\n      return `${m}m ${s}s ago`\n    },\n\n    pathSys()  { return this.makePath(\"sys\", false) },\n    pathPump() { return this.makePath(\"pump\", true) },\n\n    tooltipStyle() {\n      const leftPct = Math.max(6, Math.min(94, (this.hoverX / 600) * 100))\n      return { left: leftPct + \"%\" }\n    }\n  },\n\n  watch: {\n    msg: {\n      immediate: true,\n      handler() {\n        if (!this.valid) return\n\n        const sys = this.sysNow\n        const pump = this.pumpNow\n        const t = Date.now()\n\n        if (!isFinite(sys)) return\n\n        this.points.push({ t, sys, pump })\n        if (this.points.length > this.maxPoints) this.points.shift()\n\n        if (!this.hovering) {\n          this.hoverIdx = Math.max(0, this.points.length - 1)\n          this.hoverX = 600\n        }\n      }\n    }\n  },\n\n  methods: {\n    fmt(v) {\n      if (v === null || v === undefined || !isFinite(Number(v))) return \"—\"\n      return Number(v).toFixed(1)\n    },\n\n    makePath(key, gap) {\n      if (this.points.length < 2) return \"\"\n      const n = this.points.length\n      const xMax = Math.max(1, n - 1)\n\n      let d = \"\"\n      let pen = false\n\n      for (let i = 0; i < n; i++) {\n        const v = this.points[i][key]\n        if (gap && (v === null || v === undefined)) { pen = false; continue }\n\n        const x = ((i / xMax) * 600).toFixed(2)\n        const y = this.yFor(v)\n\n        if (!pen) { d += `M ${x} ${y}`; pen = true }\n        else      { d += ` L ${x} ${y}` }\n      }\n      return d\n    },\n\n    yFor(v) {\n      const H = 180\n      const num = Number(v ?? 0)\n      const clamped = Math.max(0, Math.min(100, num))\n      return (H - (clamped / 100) * H).toFixed(2)\n    },\n\n    onMove(e) {\n      if (this.points.length < 2) return\n      const rect = this.$refs.wrap.getBoundingClientRect()\n      const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left))\n      this.applyHover(x / rect.width)\n    },\n\n    onTouch(e) {\n      if (this.points.length < 2) return\n      const rect = this.$refs.wrap.getBoundingClientRect()\n      const t = e.touches?.[0]\n      if (!t) return\n      const x = Math.max(0, Math.min(rect.width, t.clientX - rect.left))\n      this.applyHover(x / rect.width)\n    },\n\n    applyHover(nx) {\n      this.hovering = true\n      this.hoverX = Math.max(0, Math.min(600, nx * 600))\n      const idx = Math.round(nx * (this.points.length - 1))\n      this.hoverIdx = Math.max(0, Math.min(this.points.length - 1, idx))\n    },\n\n    onLeave() {\n      this.hovering = false\n      this.hoverIdx = Math.max(0, this.points.length - 1)\n      this.hoverX = 600\n    }\n  }\n}\n</script>\n\n<style scoped>\n/* ===== Terminal Shell ===== */\n.term-card{\n  position: relative;\n  border-radius: 14px;\n  padding: 12px;\n  color: #b6ffb6;\n  background: radial-gradient(120% 140% at 20% 0%, #07110a 0%, #040906 55%, #020403 100%);\n  box-shadow: 0 4px 14px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,255,120,0.10);\n  font-family: \"Courier New\", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", monospace;\n  overflow: hidden;\n}\n\n.top-row{\n  display:flex;\n  justify-content:space-between;\n  align-items:flex-start;\n  gap: 10px;\n  flex-wrap: wrap;\n}\n\n.term-title{\n  font-size:12px;\n  letter-spacing:0.18em;\n  text-shadow:0 0 8px rgba(0,255,120,0.35);\n}\n\n.legend{\n  display:flex;\n  gap: 14px;\n  flex-wrap: wrap;\n  align-items:center;\n  font-size:12px;\n  opacity:0.85;\n  letter-spacing:0.06em;\n}\n\n.leg{\n  display:flex;\n  align-items:center;\n  gap:6px;\n}\n\n.dot{\n  width:10px;height:10px;border-radius:999px;display:inline-block;\n  box-shadow: 0 0 10px rgba(0,0,0,0.35);\n}\n.dot.sys{ background:#00ff8c; box-shadow: 0 0 10px rgba(0,255,140,0.35); }\n.dot.pump{ background:#00a0ff; box-shadow: 0 0 10px rgba(0,160,255,0.35); }\n\n.num{\n  font-weight:900;\n  color:#d9ffd9;\n}\n.num.sys{ color:#00ff8c; text-shadow:0 0 10px rgba(0,255,140,0.25); }\n.num.pump{ color:#00a0ff; text-shadow:0 0 10px rgba(0,160,255,0.25); }\n.u{ opacity:0.75; }\n.time{ opacity:0.65; }\n\n/* ===== Plot Area ===== */\n.plot-wrap{\n  margin-top: 10px;\n  border-radius: 12px;\n  padding: 10px;\n  position: relative;\n\n  background: rgba(0,0,0,0.55);\n  border: 1px solid rgba(0,255,120,0.18);\n  box-shadow: inset 0 0 18px rgba(0,0,0,0.85);\n}\n\n.plot{\n  width:100%;\n  height:180px;\n  display:block;\n}\n\n.grid line{\n  stroke: rgba(0,255,120,0.20);\n  stroke-width: 1;\n  opacity: 0.35;\n}\n\n.axisText{\n  fill: rgba(217,255,217,0.65);\n  font-size: 12px;\n  font-family: \"Courier New\", monospace;\n}\n\n.trend{\n  fill:none;\n  stroke-width:3;\n  stroke-linejoin:round;\n  stroke-linecap:round;\n  filter: drop-shadow(0 0 10px rgba(0,0,0,0.35));\n}\n\n.cross{\n  stroke: rgba(217,255,217,0.55);\n  stroke-width: 1;\n}\n.crossOuter{\n  fill: rgba(217,255,217,0.85);\n}\n\n/* Tooltip */\n.tip{\n  position:absolute;\n  top: 10px;\n  transform: translateX(-50%);\n  pointer-events:none;\n\n  background: rgba(0,0,0,0.75);\n  border: 1px solid rgba(0,255,120,0.20);\n  border-radius: 12px;\n  padding: 8px 10px;\n  box-shadow: 0 8px 22px rgba(0,0,0,0.45), 0 0 14px rgba(0,255,120,0.06);\n}\n\n.tipTime{ font-size: 11px; opacity: 0.75; }\n.tipBody{\n  margin-top: 4px;\n  font-size: 14px;\n  font-weight: 900;\n  line-height: 1.2;\n}\n.muted{ opacity:0.7; font-weight:700; }\n.tipBody .u{ font-size: 12px; opacity:0.8; }\n\n/* Footer */\n.foot{\n  margin-top: 8px;\n  display:flex;\n  justify-content:space-between;\n  font-size: 11px;\n  opacity: 0.65;\n  letter-spacing: 0.08em;\n}\n\n/* CRT Scanlines */\n.crt-overlay{\n  pointer-events:none;\n  position:absolute;\n  inset:0;\n  background: repeating-linear-gradient(\n    to bottom,\n    rgba(0,0,0,0) 0px,\n    rgba(0,0,0,0) 2px,\n    rgba(0,0,0,0.15) 3px\n  );\n  opacity:0.45;\n}\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1230,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "71ba727059e77e0d",
+        "type": "ui-template",
+        "z": "f9a810a95d954df5",
+        "group": "e88373b511d17919",
+        "page": "",
+        "ui": "",
+        "name": "VFD setpoint",
+        "order": 4,
+        "width": 2,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div class=\"term-card\">\n    <div class=\"term-header\">\n      <div class=\"term-title\">PSI SETPOINT</div>\n      <div class=\"term-meta\">{{ min }}–{{ max }} PSI</div>\n    </div>\n\n    <div class=\"term-controls\">\n      <button class=\"btn\" @click=\"stepDown\" :disabled=\"local <= min\">−</button>\n\n      <input\n        class=\"term-input\"\n        type=\"text\"\n        inputmode=\"decimal\"\n        :value=\"displayText\"\n        @input=\"onType($event.target.value)\"\n        @blur=\"commit\"\n        @keydown.enter.prevent=\"commit\"\n      />\n\n      <button class=\"btn\" @click=\"stepUp\" :disabled=\"local >= max\">+</button>\n    </div>\n\n    <div class=\"term-hint\">PSI</div>\n\n    <div class=\"crt-overlay\"></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data(){\n    return {\n      min: 57,\n      max: 80,\n      step: 0.5,\n      local: 65,\n      displayText: \"65.0\",\n      typingTimer: null\n    }\n  },\n\n  watch:{\n    msg:{\n      immediate:true,\n      handler(){\n        const n = Number(this.msg?.payload)\n        if (!Number.isFinite(n)) return\n        const v = this.clampRound(n) // assumes RAW PSI coming back\n        this.local = v\n        this.displayText = v.toFixed(1)\n      }\n    }\n  },\n\n  methods:{\n    clampRound(v){\n      const n = Number(v)\n      if (!Number.isFinite(n)) return this.min\n      const clamped = Math.max(this.min, Math.min(this.max, n))\n      const stepped = Math.round(clamped / this.step) * this.step\n      return Math.max(this.min, Math.min(this.max, stepped))\n    },\n\n    emit(){\n      // send RAW PSI (your flow multiplies x10)\n      this.send({ payload: this.local })\n    },\n\n    stepUp(){\n      this.local = this.clampRound(this.local + this.step)\n      this.displayText = this.local.toFixed(1)\n      this.emit()\n    },\n\n    stepDown(){\n      this.local = this.clampRound(this.local - this.step)\n      this.displayText = this.local.toFixed(1)\n      this.emit()\n    },\n\n    onType(txt){\n      const cleaned = String(txt).replace(/[^0-9.]/g,\"\")\n      this.displayText = cleaned\n\n      clearTimeout(this.typingTimer)\n      this.typingTimer = setTimeout(()=>{\n        const n = Number(this.displayText)\n        if (!Number.isFinite(n)) return\n        this.local = this.clampRound(n)\n        this.displayText = this.local.toFixed(1)\n        this.emit()\n      },300)\n    },\n\n    commit(){\n      clearTimeout(this.typingTimer)\n      const n = Number(this.displayText)\n      if (Number.isFinite(n)) this.local = this.clampRound(n)\n      this.displayText = this.local.toFixed(1)\n      this.emit()\n    }\n  }\n}\n</script>\n\n<style scoped>\n.term-card{\n  position:relative;\n  border-radius:14px;\n  padding:14px;\n  color:#ffffff;\n  background: radial-gradient(120% 140% at 20% 0%, #07110a 0%, #040906 55%, #020403 100%);\n  box-shadow: 0 4px 14px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(0,255,120,0.10);\n  font-family: \"Courier New\", monospace;\n  overflow:hidden;\n}\n\n.term-header{\n  display:flex;\n  justify-content:space-between;\n  margin-bottom:10px;\n}\n\n.term-title{\n  font-size:12px;\n  letter-spacing:0.18em;\n}\n\n.term-meta{\n  font-size:11px;\n  opacity:0.6;\n}\n\n/* ===== ONLY THIS AREA IS TIGHTENED ===== */\n.term-controls{\n  display:flex;\n  align-items:center;\n  gap:6px;              /* tighter */\n}\n\n.btn{\n  width:34px;           /* smaller */\n  height:32px;\n  border-radius:10px;\n  border:1px solid rgba(255,255,255,0.18);\n  background:rgba(0,0,0,0.45);\n  color:#ffffff;\n  font-weight:900;\n  font-size:16px;\n  padding:0;            /* prevents extra width */\n  cursor:pointer;\n  box-shadow: inset 0 0 18px rgba(0,0,0,0.85);\n}\n\n.btn:disabled{\n  opacity:0.35;\n  cursor:not-allowed;\n}\n\n.term-input{\n  flex:1;\n  max-width:120px;      /* stops stretching */\n  height:32px;\n  border-radius:10px;\n  border:1px solid rgba(255,255,255,0.18);\n  background:rgba(0,0,0,0.55);\n  color:#ffffff;\n  font-weight:900;\n  font-size:18px;\n  text-align:center;\n  outline:none;\n  padding:0 6px;        /* tighter */\n  box-shadow: inset 0 0 18px rgba(0,0,0,0.85);\n}\n\n.term-hint{\n  margin-top:8px;\n  font-size:12px;\n  opacity:0.7;\n  letter-spacing:0.16em;\n  text-align:center;\n}\n\n/* CRT */\n.crt-overlay{\n  pointer-events:none;\n  position:absolute;\n  inset:0;\n  background:repeating-linear-gradient(\n    to bottom,\n    rgba(0,0,0,0) 0px,\n    rgba(0,0,0,0) 2px,\n    rgba(0,0,0,0.15) 3px\n  );\n  opacity:0.45;\n}\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1170,
+        "y": 560,
+        "wires": [
+            [
+                "7826ca611942daa8"
+            ]
+        ]
+    },
+    {
+        "id": "5f360e1903c7300a",
+        "type": "ui-template",
+        "z": "f9a810a95d954df5",
+        "group": "e88373b511d17919",
+        "page": "",
+        "ui": "",
+        "name": "VFD Speed",
+        "order": 3,
+        "width": 1,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div class=\"vfd-tile\">\n    <div class=\"vfd-center\">\n      <div class=\"vfd-label\">VFD SPEED</div>\n      <div class=\"vfd-value\">\n        {{ speedText }}<span class=\"vfd-unit\">%</span>\n      </div>\n    </div>\n\n    <div class=\"vfd-crt\"></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  computed:{\n    raw(){\n      return Number(this.msg?.payload ?? NaN)\n    },\n    speedText(){\n      return Number.isFinite(this.raw) ? this.raw.toFixed(0) : \"--\"\n    }\n  }\n}\n</script>\n\n<style scoped>\n.vfd-tile{\n  position:relative;\n  display:flex;\n  align-items:center;\n  justify-content:center;\n\n  width:96px;\n  height:114px;   /* locked sweet spot */\n  padding:5px;\n\n  border-radius:12px;\n  background: radial-gradient(120% 140% at 20% 0%, #07110a 0%, #040906 55%, #020403 100%);\n  box-shadow:\n    0 3px 10px rgba(0,0,0,0.55),\n    inset 0 0 0 1px rgba(0,255,120,0.10);\n\n  font-family:\"Courier New\", monospace;\n  color:#b6ffb6;\n  overflow:hidden;\n}\n\n.vfd-center{\n  text-align:center;\n  line-height:1.05;\n}\n\n.vfd-label{\n  font-size:9px;          /* slightly bigger */\n  letter-spacing:0.12em;\n  opacity:0.8;\n  margin-bottom:3px;\n  text-shadow:0 0 5px rgba(0,255,120,0.35);\n}\n\n.vfd-value{\n  font-size:28px;         /* bumped up */\n  font-weight:900;\n  color:#d9ffd9;\n  letter-spacing:0.02em;\n  text-shadow:\n    0 0 7px rgba(0,255,120,0.45),\n    0 0 14px rgba(0,255,120,0.25);\n}\n\n.vfd-unit{\n  font-size:12px;\n  margin-left:2px;\n  opacity:0.85;\n}\n\n.vfd-crt{\n  pointer-events:none;\n  position:absolute;\n  inset:0;\n  background: repeating-linear-gradient(\n    to bottom,\n    rgba(0,0,0,0) 0px,\n    rgba(0,0,0,0) 2px,\n    rgba(0,0,0,0.15) 3px\n  );\n  opacity:0.25;\n}\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1170,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0a52c07d1e641816",
+        "type": "ui-template",
+        "z": "f9a810a95d954df5",
+        "group": "e88373b511d17919",
+        "page": "",
+        "ui": "",
+        "name": "Pump ON OFF",
+        "order": 2,
+        "width": 1,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div class=\"term-card\">\n    <div class=\"term-title\">PUMP {{ state ? \"ON\" : \"OFF\" }}</div>\n\n    <div class=\"pump-wrap\" @click=\"toggle\">\n      <svg\n        class=\"pump-icon\"\n        :class=\"{ on: state, off: !state }\"\n        viewBox=\"0 0 64 64\"\n      >\n        <!-- body -->\n        <rect x=\"14\" y=\"24\" width=\"36\" height=\"22\" rx=\"4\"/>\n        <!-- inlet -->\n        <rect x=\"6\" y=\"30\" width=\"10\" height=\"10\" rx=\"2\"/>\n        <!-- outlet -->\n        <rect x=\"48\" y=\"30\" width=\"10\" height=\"10\" rx=\"2\"/>\n        <!-- motor top -->\n        <rect x=\"24\" y=\"14\" width=\"16\" height=\"10\" rx=\"2\"/>\n      </svg>\n    </div>\n\n    <div class=\"crt-overlay\"></div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data(){\n    return { localState: false }\n  },\n\n  computed:{\n    state(){\n      const incoming = this.msg?.payload\n      if (typeof incoming === \"boolean\") {\n        this.localState = incoming\n      }\n      return this.localState\n    }\n  },\n\n  methods:{\n    toggle(){\n      const next = !this.localState\n      this.localState = next\n      this.send({ payload: next }) // → modbus coil\n    }\n  }\n}\n</script>\n\n<style scoped>\n.term-card{\n  position: relative;\n  border-radius: 14px;\n  padding: 12px;\n  font-family: \"Courier New\", monospace;\n  text-align:center;\n  overflow:hidden;\n}\n\n.term-title{\n  font-size:14px;\n  letter-spacing:0.18em;\n  margin-bottom:10px;\n  color:#ffffff;\n}\n\n.pump-wrap{\n  cursor:pointer;\n  display:flex;\n  justify-content:center;\n}\n\n/* ===== THIS IS THE IMPORTANT PART ===== */\n/* beat global svg fill:white */\n.pump-icon,\n.pump-icon *{\n  fill:#555 !important;\n  transition: fill 0.2s ease, filter 0.2s ease, transform 0.08s ease;\n}\n\n.pump-wrap:active .pump-icon{\n  transform: scale(0.96);\n}\n\n/* ON */\n.pump-icon.on,\n.pump-icon.on *{\n  fill:#ffffff !important;\n  filter: drop-shadow(0 0 12px rgba(255,255,255,0.45));\n}\n\n/* OFF */\n.pump-icon.off,\n.pump-icon.off *{\n  fill:#555 !important;\n  filter:none;\n}\n\n/* CRT */\n.crt-overlay{\n  pointer-events:none;\n  position:absolute;\n  inset:0;\n  background: repeating-linear-gradient(\n    to bottom,\n    rgba(0,0,0,0) 0px,\n    rgba(0,0,0,0) 2px,\n    rgba(0,0,0,0.15) 3px\n  );\n  opacity:0.45;\n}\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1180,
+        "y": 500,
+        "wires": [
+            [
+                "a6f9458fac111516"
+            ]
+        ]
+    },
+    {
+        "id": "b82c7cd090de37b0",
+        "type": "uibuilder",
+        "z": "f9a810a95d954df5",
+        "name": "",
+        "topic": "",
+        "url": "pump2",
+        "okToGo": true,
+        "fwdInMessages": false,
+        "allowScripts": false,
+        "allowStyles": false,
+        "copyIndex": true,
+        "templateFolder": "blank",
+        "extTemplate": "",
+        "showfolder": false,
+        "reload": false,
+        "sourceFolder": "src",
+        "deployedVersion": "7.5.0",
+        "showMsgUib": false,
+        "title": "",
+        "descr": "",
+        "editurl": "",
+        "x": 300,
+        "y": 240,
+        "wires": [
+            [
+                "5b509ba4ac0fa2fb",
+                "de8f7cf8b3280d5c"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "1c3e2c836f2fb6a2",
+        "type": "modbus-client",
+        "name": "VirtualPLC",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "127.0.0.1",
+        "tcpPort": "5020",
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": 9600,
+        "serialDatabits": 8,
+        "serialStopbits": 1,
+        "serialParity": "none",
+        "serialConnectionDelay": 100,
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": 1,
+        "commandDelay": 1,
+        "clientTimeout": 1000,
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": 2000,
+        "parallelUnitIdsAllowed": true,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": true
+    },
+    {
+        "id": "e88373b511d17919",
+        "type": "ui-group",
+        "name": "Controls",
+        "page": "063f705ef04cc098",
+        "width": "3",
+        "height": 1,
+        "order": 2,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "b0cb45521bd77bb0",
+        "type": "ui-group",
+        "name": "Alarms",
+        "page": "063f705ef04cc098",
+        "width": 6,
+        "height": 1,
+        "order": 3,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "42f4b9cde9fb2463",
+        "type": "ui-base",
+        "name": "My Dashboard",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default",
+        "showReconnectNotification": true,
+        "notificationDisplayTime": 1,
+        "showDisconnectNotification": true,
+        "allowInstall": false
+    },
+    {
+        "id": "c0022a438e1a49fe",
+        "type": "ui-group",
+        "name": "Process",
+        "page": "063f705ef04cc098",
+        "width": "3",
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "063f705ef04cc098",
+        "type": "ui-page",
+        "name": "Digital Well House Twin ",
+        "ui": "42f4b9cde9fb2463",
+        "path": "/page1",
+        "icon": "home",
+        "layout": "grid",
+        "theme": "a5c7a22bc8dbe30f",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "a5c7a22bc8dbe30f",
+        "type": "ui-theme",
+        "name": "Default Theme",
+        "colors": {
+            "surface": "#ffffff",
+            "primary": "#646e73",
+            "bgPage": "#eeeeee",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "76427cfaa3c040c4",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-modbus": "5.45.2",
+            "@flowfuse/node-red-dashboard": "1.30.2",
+            "node-red-contrib-uibuilder": "7.5.0"
+        }
+    }
+]
