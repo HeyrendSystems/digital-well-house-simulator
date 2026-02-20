@@ -57,7 +57,7 @@ Node-RED reads these values and renders a live operational HMI.
 - Flow behavior based on pressure conditions
 - Alarm state handling
 - Pump Fault Unlatch
-- Scaled Modbus register values (engineering values ×10 for integer storage)
+- Scaled Modbus register values (e.g., 850 represents 85.0%)
 - HMI converts scaled register values back to standard engineering units for display
 - Clear separation between simulation logic and HMI layer
 
