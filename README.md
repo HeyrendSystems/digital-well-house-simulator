@@ -32,10 +32,8 @@ Node-RED (data ingestion + HMI logic)
 HMI (charts • status • alarms)
 ```
 
-
-
 The Python backend models pump physics and control logic.  
-PyModbus emulates PLC-style Modbus register behavior through holding registers and coils.  
+PyModbus runs a Modbus TCP server exposing PLC-style registers and coils.  
 Node-RED reads these values and renders a live operational HMI.
 
 ---
