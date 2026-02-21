@@ -1,23 +1,39 @@
-import time
+# Python standard library
 import threading
-from pymodbus.server import StartTcpServer # Starts TCP server that stays running listen for Node-red
-from pymodbus.datastore import ModbusServerContext, ModbusDeviceContext # Classes for Modbus data storage
-from pymodbus.datastore import ModbusSequentialDataBlock # Class to create a block of Modbus memory
-from pump import Pump
-from process_values import ProcessValues
+import time
+
+# External libraries
+from pymodbus.datastore import (
+    ModbusDeviceContext,
+    ModbusSequentialDataBlock,
+    ModbusServerContext,
+)
+from pymodbus.server import StartTcpServer
+
+# Simulation classes
+from alarm_states import AlarmStates
 from field_devices import FieldDevices
 from process_sim import ProcessSim
-from alarm_states import AlarmStates
+from process_values import ProcessValues
+from pump import Pump
+
+# Local constants
+from constants import (
+    COIL_COUNT,
+    HOLDING_REGISTER_COUNT,
+    MODBUS_HOST,
+    MODBUS_PORT,
+    SCAN_CYCLE_TIME_S,
+)
 
 
-store = ModbusDeviceContext(                  # store is used as the variable for ModbusSlaveContext, this object is the main PLC memory table
-    co=ModbusSequentialDataBlock(0, [0] * 50), # 50 coils (ON/OFF points)
-    hr=ModbusSequentialDataBlock(0, [0] * 50), # 50 holding registers (VALUEs)
+store = ModbusDeviceContext(  # store is used as the variable for ModbusSlaveContext, this object is the main PLC memory table
+    co=ModbusSequentialDataBlock(0, [0] * COIL_COUNT),  #coils (ON/OFF points)
+    hr=ModbusSequentialDataBlock(0, [0] * HOLDING_REGISTER_COUNT),  # holding registers (VALUEs)
 )
 
 context = ModbusServerContext(devices=store, single=True)
 
-SCAN_TIME_CYCLE = 1.0
 
 def scan(store, pump, process, device, sim, alarms):
     # stores certain values first scan only
@@ -55,23 +71,21 @@ def scan(store, pump, process, device, sim, alarms):
 
 
 
-def main(): # everything working together
-    
+def main():  # everything working together
     pump = Pump()
     process = ProcessValues(pump)
     device = FieldDevices(pump,process)
     sim = ProcessSim(process,pump,device)
     alarms = AlarmStates(process,pump)
-    
+
     while True:
         scan(store, pump, process, device, sim, alarms)
-        time.sleep(SCAN_TIME_CYCLE)
+        time.sleep(SCAN_CYCLE_TIME_S)
 
 
 
-print("Starting Virtual PLC/RTU on 127.0.0.1:5020")
+print(f"Starting Virtual PLC/RTU on {MODBUS_HOST}:{MODBUS_PORT}")
 t = threading.Thread(target=main, daemon=True)  # separate thread to run main() & host server at the same time
 t.start()
-StartTcpServer(context=context, address=("127.0.0.1", 5020)) # Tcp host for node-red and the future HMI
+StartTcpServer(context=context, address=(MODBUS_HOST, MODBUS_PORT))  # Tcp host for node-red and the future HMI
 
-        
