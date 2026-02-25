@@ -1,10 +1,11 @@
 # constants from pump
 PUMP_INERTIA_THRESHOLD_PERCENT = 15
 
-# constants from processSim
+# constants from processValue
 DEFAULT_OPERATOR_VFD_SETPOINT = 550
 DEFAULT_TANK_LEVEL = 850
 DEFAULT_VFD_SETPOINT = 550
+PSI_SCALE_MULTIPLIER = 10
 
 # constants from processSim
 DEADBAND = 10
