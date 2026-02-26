@@ -16,6 +16,7 @@ from field_devices import FieldDevices
 from process_sim import ProcessSim
 from process_values import ProcessValues
 from pump import Pump
+from sim_database import SimDatabase
 
 # Local constants
 from constants import (
@@ -69,7 +70,7 @@ def scan(store, pump, process, device, sim, alarms):
     sim.sim_time()
     sim.sim_time_holding_registers(store)
 
-
+stop_event = threading.Event()
 
 def main():  # everything working together
     pump = Pump()
@@ -77,15 +78,27 @@ def main():  # everything working together
     device = FieldDevices(pump,process)
     sim = ProcessSim(process,pump,device)
     alarms = AlarmStates(process,pump)
+    db = SimDatabase()
 
-    while True:
-        scan(store, pump, process, device, sim, alarms)
-        time.sleep(SCAN_CYCLE_TIME_S)
+    db.init_db()
 
-
+    try:
+        while not stop_event.is_set():
+            scan(store, pump, process, device, sim, alarms)
+            time.sleep(SCAN_CYCLE_TIME_S)
+    finally:
+        print("ganster")
+        db.close_db()
 
 print(f"Starting Virtual PLC/RTU on {MODBUS_HOST}:{MODBUS_PORT}")
-t = threading.Thread(target=main, daemon=True)  # separate thread to run main() & host server at the same time
+t = threading.Thread(target=main)  # separate thread to run main() & host server at the same time
 t.start()
-StartTcpServer(context=context, address=(MODBUS_HOST, MODBUS_PORT))  # Tcp host for node-red and the future HMI
+try:
+    StartTcpServer(context=context, address=(MODBUS_HOST, MODBUS_PORT))  # Tcp host for node-red and the future HMI
+except KeyboardInterrupt:
+    print("Ctrl+C received")
+finally:
+    stop_event.set()
+    t.join()
+    print("Shutdown complete")
 
