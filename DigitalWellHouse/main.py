@@ -87,7 +87,6 @@ def main():  # everything working together
             scan(store, pump, process, device, sim, alarms)
             time.sleep(SCAN_CYCLE_TIME_S)
     finally:
-        print("ganster")
         db.close_db()
 
 print(f"Starting Virtual PLC/RTU on {MODBUS_HOST}:{MODBUS_PORT}")
