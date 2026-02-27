@@ -9,6 +9,7 @@ from pymodbus.datastore import (
     ModbusServerContext,
 )
 from pymodbus.server import StartTcpServer
+from datetime import datetime
 
 # Simulation classes
 from alarm_states import AlarmStates
@@ -72,7 +73,7 @@ def scan(store, pump, process, device, sim, alarms):
 
 stop_event = threading.Event()
 
-def main():  # everything working together
+def main(): # everything working together
     pump = Pump()
     process = ProcessValues(pump)
     device = FieldDevices(pump,process)
@@ -80,11 +81,22 @@ def main():  # everything working together
     alarms = AlarmStates(process,pump)
     db = SimDatabase()
 
+    db.wipe_data()
     db.init_db()
 
     try:
         while not stop_event.is_set():
             scan(store, pump, process, device, sim, alarms)
+            # database entries
+            timestamp = datetime.now().isoformat(timespec="seconds")
+            db.insert_reading(
+            timestamp = timestamp,
+            flow_gpm = process.flow_gpm,
+            pump_head =  process.total_head_psi,
+            system_head = process.system_required_psi,
+            vfd_percent = process.vfd_pump_speed_control
+    )
+
             time.sleep(SCAN_CYCLE_TIME_S)
     finally:
         db.close_db()
