@@ -1,6 +1,6 @@
 # digital-well-house-simulator
 
-Industrial pump and VFD simulation with a real-time HMI built in Python and Node-RED.
+Industrial pump and VFD simulation with a real-time HMI and built-in SQLite historian, developed in Python and Node-RED.
 
 ---
 
@@ -15,7 +15,10 @@ The Digital Well House Simulator models a pump-driven water system including:
 - Flow rate behavior  
 - Alarm conditions  
 - Modbus-style register communication  
-- Real-time HMI visualization via Node-RED  
+- Real-time HMI visualization via Node-RED
+- Scan-cycle data logging using SQLite
+
+The simulator records timestamped scan data to SQLite. The historian structure is being refined to ensure consistent, well-defined logging data.
 
 ---
 
@@ -30,11 +33,15 @@ Node-RED (data ingestion + HMI logic)
         │
         ▼
 HMI (charts • status • alarms)
+        │
+        ▼
+SQLite Historian (scan-cycle logging)
 ```
 
 The Python backend models pump physics and control logic.  
 PyModbus runs a Modbus TCP server exposing PLC-style registers and coils.  
-Node-RED reads these values and renders a live operational HMI.
+Node-RED reads these values and renders a live operational HMI.  
+SQLite records timestamped scan data each cycle as part of an evolving historian component.
 
 ---
 
@@ -43,6 +50,7 @@ Node-RED reads these values and renders a live operational HMI.
 - Python (simulation logic and control modeling)
 - PyModbus (Modbus TCP register emulation)
 - NumPy (mathematical modeling and pump curve calculations)
+- SQLite (scan-cycle data logging)
 - Node-RED (real-time data flow and HMI visualization)
 - Git & GitHub (version control and project management)
 
@@ -57,6 +65,7 @@ Node-RED reads these values and renders a live operational HMI.
 - Pump Fault Unlatch
 - Scaled Modbus register values (e.g., 850 represents 85.0%)
 - HMI converts scaled register values back to standard engineering units for display
+- Scan-cycle data logging with automatic table creation on startup
 - Clear separation between simulation logic and HMI layer
 
 ---
@@ -171,6 +180,19 @@ Node-RED reads the simulated Modbus register values and displays:
 - Chlorine Injection Pump Running (`chlrInjPump`)
 - Low Pressure Alarm (`lowPsiAlarm`)
 
+### SQLite Historian
+
+The simulator logs key process values to a local SQLite database on every scan cycle.
+
+Each run:
+
+- Automatically creates the required table  
+- Inserts timestamped readings per cycle  
+- Closes the database cleanly on shutdown  
+- Optionally resets the database between runs  
+
+This allows post-run inspection of system behavior and basic historical analysis.
+
 ---
 
 ## How to Run
@@ -210,17 +232,22 @@ python digitalwellhouse/main.py
 - How VFD speed scaling affects head generation and flow behavior
 - Implementing Modbus-style register mapping and scaled value handling
 - Designing a real-time industrial telemetry HMI
-- Structuring a system so simulation logic remains separate from visualization logic
+- Structuring a system so simulation logic remains separate from visualization and data logging layers
+- Managing a deterministic scan loop with clean startup and shutdown behavior
+- Implementing SQLite logging with runtime schema creation and safe connection handling
 
 ---
 
 ## Future Improvements
 
-- Add a simple demand model (ex: sine-wave based daily usage curve)
+- Add a simple demand model (e.g., sine-wave based daily usage curve)
 - Expand alarm and fault scenarios (more realistic trips and reset behavior)
-- Add SQL logging / basic historian
+- Refactor SQLite schema for clean, consistent scan data (defined columns + units)
+- Separate historian into readings, alarms, and events tables
+- Standardize logged fields per scan cycle
+- Add indexing and optional data retention controls
 - Make key system parameters editable from the HMI (k-factor, setpoints, ramp rates, etc.)
-- Add a REST API (and optionally an MQTT interface)
+- Add a REST API (and optionally MQTT interface)
 - Improve code maintainability by centralizing configuration values and reducing hard-coded parameters
 
 ---
