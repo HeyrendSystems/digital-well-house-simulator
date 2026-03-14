@@ -37,14 +37,6 @@ class ProcessSim:
         self.rng_down_count = 0
         self.rng_up_count = 0
 
-        # Scan state
-        self.first_scan = True
-
-    def first_scan_items(self, store):
-        if self.first_scan:
-            store.setValues(FC_HOLDING_REGISTERS, 8, [550])
-            self.first_scan = False
-
     def sim_time(self):
         self.sim_clock += self.sim_clock_delta
         if self.sim_clock == 60:  # can be adjusted to 60 for faster sim
@@ -72,7 +64,6 @@ class ProcessSim:
     def vfd_command(self):
         error = ((self.process.operator_vfd_setpoint - self.process.actual_psi) * self.accel_time * DELTA_TIME_S) / VFD_ERROR_GAIN_DIVISOR
         self.new_vfd_speed = (self.command - self.process.vfd_pump_speed_control) * self.accel_time * DELTA_TIME_S
-        self.pump.run_enable = not self.pump.pump_flt
         target = self._in_deadband()
         vfd_upper_trigger = VFD_MAX_PERCENT - VFD_SAFETY_MARGIN_PERCENT
         vfd_lower_trigger = VFD_MIN_PERCENT + VFD_SAFETY_MARGIN_PERCENT
@@ -100,10 +91,9 @@ class ProcessSim:
 
         if self.process.vfd_pump_speed_control < vfd_lower_trigger:
             self.process.vfd_pump_speed_control = VFD_MIN_PERCENT
-        return self.process.vfd_pump_speed_control, self.process.actual_psi, self.process.vfd_set_point
+        return self.process.vfd_pump_speed_control, self.process.actual_psi
 
     def update_flow_gpm(self):
-        self.pump.run_enable = not self.pump.pump_flt
         target = self._in_deadband()
         pump_capability = self.process.total_head_psi
         system_requirement = self.process.system_required_psi

@@ -1,21 +1,23 @@
 # digital-well-house-simulator
 
-Industrial pump and VFD simulation with a real-time HMI built in Python and Node-RED.
+A personal project focused on simulating an industrial pump and VFD-driven water system with a real-time HMI built using Python and Node-RED.
 
 ---
 
 ## Overview
 
-This project was initially developed to deepen my understanding of PLC-driven control systems and industrial communication concepts. As the project evolved, I began modeling realistic hydraulic behavior and pump dynamics to better understand how control logic interacts with physical systems.
+For this project, I am attempting to build a digital well house simulator that models how a real pump-driven water system behaves when interacting with control logic and system hydraulics. This is an ongoing effort to deepen my understanding of industrial control systems, PLC-style communication, and pump hydraulics.
 
-The Digital Well House Simulator models a pump-driven water system including:
+This simulation attempts to model:
 
 - Pump head and system pressure
-- VFD speed control  
-- Flow rate behavior  
-- Alarm conditions  
-- Modbus-style register communication  
-- Real-time HMI visualization via Node-RED  
+- VFD speed control
+- Flow rate behavior
+- Alarm conditions
+- Modbus-style register communication
+- Real-time HMI visualization via Node-RED
+
+As the project evolves, I will continue refining the hydraulic modeling and system behavior to more closely represent how real pump systems operate in the field.
 
 ---
 
@@ -32,23 +34,23 @@ Node-RED (data ingestion + HMI logic)
 HMI (charts • status • alarms)
 ```
 
-The Python backend models pump physics and control logic.  
-PyModbus runs a Modbus TCP server exposing PLC-style registers and coils.  
+The Python backend models pump physics and control logic.
+PyModbus runs a Modbus TCP server exposing PLC-style registers and coils.
 Node-RED reads these values and renders a live operational HMI.
 
 ---
 
 ## Tech Stack
 
-- Python (simulation logic and control modeling)
-- PyModbus (Modbus TCP register emulation)
-- NumPy (mathematical modeling and pump curve calculations)
-- Node-RED (real-time data flow and HMI visualization)
-- Git & GitHub (version control and project management)
+- Python — simulation logic and system modeling
+- PyModbus — Modbus TCP register emulation
+- NumPy — pump curve interpolation and hydraulic calculations
+- Node-RED — real-time data flow and HMI visualization
+- Git & GitHub — version control and project documentation
 
 ---
 
-## Key Features
+## Current Features
 
 - Dynamic pump head vs system head interaction
 - VFD ramp-up and ramp-down simulation
@@ -65,11 +67,11 @@ Node-RED reads these values and renders a live operational HMI.
 
 The simulator models the interaction between:
 
-- Pump head generation  
-- System resistance and friction loss  
-- Static head and required discharge pressure  
-- Flow (GPM) changes based on system conditions  
-- Chemical dosage changes relative to flow  
+- Pump head generation
+- System resistance and friction loss
+- Static head and required discharge pressure
+- Flow (GPM) changes based on system conditions
+- Chemical dosage changes relative to flow
 
 VFD speed directly influences pump head generation. Flow begins only when pump head exceeds system head, establishing the system’s operating point and reflecting real-world pump behavior in industrial systems. The simulation uses an actual pump curve to produce realistic operating behavior.
 
@@ -98,7 +100,7 @@ Each row represents:
 [Flow (GPM), Head (ft)]
 ```
 
-The head values shown above represent **per-stage head**.  
+The head values shown above represent **per-stage head**.
 The simulation multiplies these values by 4 to model a four-stage pump assembly.
 
 ---
@@ -122,7 +124,7 @@ total_head_psi = static_head_psi + pressure_head_psi + friction_loss_psi
 system_required_psi = total_head_psi * 10
 ```
 
-The total system head is calculated in PSI and scaled by 10 for Modbus register representation.  
+The total system head is calculated in PSI and scaled by 10 for Modbus register representation.
 For HMI display, the value is divided by 10 to restore standard PSI units.
 
 ---
@@ -144,14 +146,14 @@ total_head_ft = per_stage_base_head_ft * (speed_frac ** 2) * stages
 total_head_psi = (total_head_ft / 2.31) * 10
 ```
 
-The calculated pump head is converted from feet of head to PSI and scaled by 10 for Modbus register representation.  
+The calculated pump head is converted from feet of head to PSI and scaled by 10 for Modbus register representation.
 For HMI display, the value is divided by 10 to restore standard PSI units.
 
 ---
 
 ### HMI Data Presentation (Node-RED)
 
-Node-RED reads the simulated Modbus register values and displays:
+Node-RED reads the simulated Modbus registers and displays the following values on the HMI:
 
 #### Process Values (Holding Registers)
 
@@ -196,15 +198,15 @@ python digitalwellhouse/main.py
 
 ### 4. Run Node-RED Dashboard
 
-1. Install Node-RED  
-2. Open `http://localhost:1880`  
-3. Import `nodered/flows.json`  
-4. Deploy  
-5. Open the HMI  
+1. Install Node-RED
+2. Open `http://localhost:1880`
+3. Import `nodered/flows.json`
+4. Deploy
+5. Open the HMI
 
 ---
 
-## What I Learned
+## What I've Learned So Far
 
 - How pump curves and system curves determine the actual operating point
 - How VFD speed scaling affects head generation and flow behavior

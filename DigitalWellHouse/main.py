@@ -38,8 +38,6 @@ context = ModbusServerContext(devices=store, single=True)
 
 
 def scan(store, pump, process, device, sim, alarms):
-    # stores certain values first scan only
-    sim.first_scan_items(store)
 
     # publishes current sim state to modbus
     process.write_holding_registers(store)

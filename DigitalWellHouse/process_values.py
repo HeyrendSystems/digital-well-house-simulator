@@ -10,7 +10,6 @@ from constants import (
     HR_VFD_SPEED_PERCENT,
     HR_SYSTEM_REQUIRED_PSI,
     HR_TOTAL_HEAD_PSI,
-    HR_VFD_SETPOINT,
     FC_HOLDING_REGISTERS,
     PSI_SCALE_MULTIPLIER,
 )
@@ -66,7 +65,6 @@ class ProcessValues:
             (HR_VFD_SPEED_PERCENT, round(self.vfd_pump_speed_control)),
             (HR_SYSTEM_REQUIRED_PSI, int(self.system_required_psi)),
             (HR_TOTAL_HEAD_PSI, int(self.total_head_psi)),
-            (HR_VFD_SETPOINT, int(self.vfd_set_point)),
         ]
         for address, value in values:
             store.setValues(FC_HOLDING_REGISTERS, address, [value])
